@@ -1,0 +1,30 @@
+.paw-trail-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.paw {
+  position: absolute;
+  background: url('/huella.png') no-repeat center/contain;
+  animation: movePaw 5s linear forwards;
+}
+
+@keyframes movePaw {
+  0% {
+    transform: translateX(0) translateY(0) rotate(var(--rotate));
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(120vw) translateY(20vh) rotate(var(--rotate));
+    opacity: 0;
+  }
+}

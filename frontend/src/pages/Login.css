@@ -1,0 +1,25 @@
+.login-page {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  background: #fefcf5; /* fondo claro tipo peluquería */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+.login-card {
+  position: relative;
+  z-index: 10;
+  background: white;
+  padding: 2rem;
+  border-radius: 15px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+  width: 100%;
+  max-width: 400px;
+}
+
+
+
+
