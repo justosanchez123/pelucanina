@@ -10,59 +10,52 @@ import api from "../api/axios";
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [errorMsg, setErrorMsg] = useState(""); // <-- Estado para el mensaje de error
   const { login } = useAuth();
   const navigate = useNavigate();
 
   const pawPrints = Array.from({ length: 20 });
 
-	const handleSubmit = async (e) => {
-	  e.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setErrorMsg(""); // limpiar mensaje previo
 
-	  try {
-		const res = await api.post("/login", { email, password });
-		const data = res.data;
+    try {
+      const res = await api.post("/login", { email, password });
+      const data = res.data;
 
-		if (!data || !data.token || !data.usuario) {
-		  alert("Respuesta inválida del servidor");
-		  return;
-		}
+      if (!data || !data.token || !data.usuario) {
+        setErrorMsg("Respuesta inválida del servidor");
+        return;
+      }
 
-		// Guardar usuario + token en el contexto y localStorage
-		login(data.usuario, data.token);
+      login(data.usuario, data.token);
 
-		// Redirigir según el rol
-		if (data.usuario.rol === "adminPrincipal") {
-		  navigate("/admin");
-		} else {
-		  navigate("/usuario");
-		}
+      if (data.usuario.rol === "adminPrincipal") {
+        navigate("/admin");
+      } else {
+        navigate("/usuario");
+      }
 
-	  } catch (error) {
-		// Axios: errores de response tienen error.response
-		if (error.response) {
-		  // Backend respondió con status distinto a 2xx
-		  const status = error.response.status;
-		  const mensaje = error.response.data?.mensaje || "Error del servidor";
+    } catch (error) {
+      if (error.response) {
+        const status = error.response.status;
+        const mensaje = error.response.data?.mensaje || "Error del servidor";
 
-		  if (status === 404) {
-			alert("Usuario o contraseña incorrectos"); // personalizado
-		  } else {
-			alert(`Error ${status}: ${mensaje}`);
-		  }
-
-		} else if (error.request) {
-		  // Request fue hecha pero no llegó respuesta
-		  console.error("❌ No hay respuesta del servidor:", error.request);
-		  alert("No se pudo conectar con el servidor");
-
-		} else {
-		  // Otro tipo de error
-		  console.error("❌ Error al iniciar sesión:", error.message);
-		  alert("Error al procesar la solicitud");
-		}
-	  }
-	};
-
+        if (status === 404) {
+          setErrorMsg("Usuario o contraseña incorrectos");
+        } else {
+          setErrorMsg(`Error ${status}: ${mensaje}`);
+        }
+      } else if (error.request) {
+        console.error("❌ No hay respuesta del servidor:", error.request);
+        setErrorMsg("No se pudo conectar con el servidor");
+      } else {
+        console.error("❌ Error al iniciar sesión:", error.message);
+        setErrorMsg("Error al procesar la solicitud");
+      }
+    }
+  };
 
   return (
     <div className="login-page">
@@ -99,6 +92,14 @@ const Login = () => {
               required
             />
           </div>
+
+          {/* Mensaje de error */}
+          {errorMsg && (
+            <div style={{ color: "red", marginBottom: "1rem", fontWeight: "bold" }}>
+              {errorMsg}
+            </div>
+          )}
+
           <button type="submit" style={{ padding: "0.5rem 1rem" }}>
             Entrar
           </button>
