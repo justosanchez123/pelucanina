@@ -15,32 +15,54 @@ const Login = () => {
 
   const pawPrints = Array.from({ length: 20 });
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const res = await api.post("/login", { email, password });
+	const handleSubmit = async (e) => {
+	  e.preventDefault();
 
-      const data = await res.data;
+	  try {
+		const res = await api.post("/login", { email, password });
+		const data = res.data;
 
-      if (!data) {
-        alert("Error al iniciar sesión: no hay datos");
-        return;
-      }
+		if (!data || !data.token || !data.usuario) {
+		  alert("Respuesta inválida del servidor");
+		  return;
+		}
 
-      // Guardar usuario + token en el contexto y localStorage
-      login(data.usuario, data.token);
+		// Guardar usuario + token en el contexto y localStorage
+		login(data.usuario, data.token);
 
-      // Redirigir según el rol
-      if (data.usuario.rol === "adminPrincipal") {
-        navigate("/admin");
-      } else {
-        navigate("/usuario");
-      }
-    } catch (error) {
-      console.error("❌ Error al loguear:", error);
-      alert("Error de conexión con el servidor");
-    }
-  };
+		// Redirigir según el rol
+		if (data.usuario.rol === "adminPrincipal") {
+		  navigate("/admin");
+		} else {
+		  navigate("/usuario");
+		}
+
+	  } catch (error) {
+		// Axios: errores de response tienen error.response
+		if (error.response) {
+		  // Backend respondió con status distinto a 2xx
+		  const status = error.response.status;
+		  const mensaje = error.response.data?.mensaje || "Error del servidor";
+
+		  if (status === 404) {
+			alert("Usuario o contraseña incorrectos"); // personalizado
+		  } else {
+			alert(`Error ${status}: ${mensaje}`);
+		  }
+
+		} else if (error.request) {
+		  // Request fue hecha pero no llegó respuesta
+		  console.error("❌ No hay respuesta del servidor:", error.request);
+		  alert("No se pudo conectar con el servidor");
+
+		} else {
+		  // Otro tipo de error
+		  console.error("❌ Error al iniciar sesión:", error.message);
+		  alert("Error al procesar la solicitud");
+		}
+	  }
+	};
+
 
   return (
     <div className="login-page">
