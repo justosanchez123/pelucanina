@@ -20,10 +20,10 @@ const Login = () => {
     try {
       const res = await api.post("/login", { email, password });
 
-      const data = await res.json();
+      const data = await res.data;
 
-      if (!res.ok) {
-        alert(data.mensaje || "Error al iniciar sesión");
+      if (!data) {
+        alert("Error al iniciar sesión: no hay datos");
         return;
       }
 
