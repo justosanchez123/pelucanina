@@ -5,6 +5,7 @@ import { useAuth } from "../context/AuthContext";
 import paw from "../assets/paw.png";
 import "./Login.css";
 import "./../index.css";
+import api from "../api/axios";
 
 const Login = () => {
   const [email, setEmail] = useState("");
