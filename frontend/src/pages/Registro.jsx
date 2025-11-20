@@ -6,6 +6,8 @@ const Registro = () => {
   const [formData, setFormData] = useState({
     nombres: "",
     apellidos: "",
+    direccion: "",
+    telefono: "",
     email: "",
     password: "",
   });
@@ -19,7 +21,7 @@ const Registro = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await api.post("/registro", formData);
+      await api.post("/registro", formData);
       setMensaje("✅ Usuario registrado con éxito");
       setTimeout(() => navigate("/login"), 1500); // redirige al login
     } catch (err) {
@@ -47,9 +49,9 @@ const Registro = () => {
           <label>Apellido/s</label>
           <input
             type="text"
-            name="nombres"
+            name="apellidos"
             className="form-control"
-            value={formData.nombres}
+            value={formData.apellidos}
             onChange={handleChange}
             required
           />
@@ -58,20 +60,20 @@ const Registro = () => {
           <label>Dirección</label>
           <input
             type="text"
-            name="nombres"
+            name="direccion"
             className="form-control"
-            value={formData.nombres}
+            value={formData.direccion}
             onChange={handleChange}
             required
           />
         </div>
-<div className="mb-3">
+        <div className="mb-3">
           <label>Teléfono</label>
           <input
             type="text"
-            name="nombres"
+            name="telefono"
             className="form-control"
-            value={formData.nombres}
+            value={formData.telefono}
             onChange={handleChange}
             required
           />
@@ -98,7 +100,9 @@ const Registro = () => {
             required
           />
         </div>
-        <button type="submit" className="btn btn-primary">Registrarse</button>
+        <button type="submit" className="btn btn-primary">
+          Registrarse
+        </button>
       </form>
     </div>
   );

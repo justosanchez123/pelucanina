@@ -1,32 +1,48 @@
+// index.js
 const express = require('express');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const cors = require('cors');
 const morgan = require('morgan');
 
+// Configuración
 dotenv.config();
-
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middlewares
+// Middlewares globales
 app.use(express.json());
 app.use(cors());
 app.use(morgan('dev'));
 
-// Rutas
-app.use('/api/registro', require('./rutas/registro'));
-app.use('/api/login', require('./rutas/login'));
-app.use('/api/duenos', require('./rutas/duenos'));
-app.use('/api/mascotas', require('./rutas/mascotas'));
-app.use('/api/turnos', require('./rutas/turnos'));
+// Rutas (todas en /api)
+const rutas = {
+  registro: require('./rutas/registro'),
+  login: require('./rutas/login'),
+  usuarios: require('./rutas/usuarios'),
+  duenos: require('./rutas/duenos'),
+  mascotas: require('./rutas/mascotas'),
+  turnos: require('./rutas/turnos'),
+};
 
-// Conexión a MongoDB y arranque
-mongoose
-  .connect(process.env.MONGO_URI)
+// Montaje de rutas
+app.use('/api/registro', rutas.registro);
+app.use('/api/login', rutas.login);
+app.use('/api/usuarios', rutas.usuarios);
+app.use('/api/duenos', rutas.duenos);
+app.use('/api/mascotas', rutas.mascotas);
+app.use('/api/turnos', rutas.turnos);
+
+// Middleware para rutas no encontradas
+app.use((req, res) => {
+  res.status(404).json({ mensaje: 'Ruta no encontrada' });
+});
+
+// Conexión a MongoDB y arranque del servidor
+mongoose.connect(process.env.MONGO_URI)
   .then(() => {
     console.log('✅ Conectado a MongoDB');
-    app.listen(PORT, () => console.log(`🚀 Servidor en puerto ${PORT}`));
+    app.listen(PORT, () => console.log(`🚀 Servidor corriendo en puerto ${PORT}`));
   })
   .catch((err) => {
     console.error('❌ Error al conectar a MongoDB:', err);

@@ -1,50 +1,57 @@
+// src/context/AuthContext.jsx
 import { createContext, useContext, useState, useEffect } from "react";
 
-// ✅ Lo exportamos como named export
 export const AuthContext = createContext();
 
-// Hook para usar AuthContext
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) throw new Error("useAuth debe usarse dentro de un AuthProvider");
+  return context;
+};
 
 export const AuthProvider = ({ children }) => {
   const [usuario, setUsuario] = useState(null);
   const [token, setToken] = useState(null);
+  const [cargando, setCargando] = useState(true);
 
-  // Cargar sesión desde localStorage
   useEffect(() => {
-    const savedUser = localStorage.getItem("usuario");
-    const savedToken = localStorage.getItem("token");
+    // CAMBIO 1: Usamos sessionStorage en lugar de localStorage
+    const savedUser = sessionStorage.getItem("usuario");
+    const savedToken = sessionStorage.getItem("token");
+
     if (savedUser && savedToken) {
       try {
         setUsuario(JSON.parse(savedUser));
         setToken(savedToken);
-      } catch {
-        localStorage.removeItem("usuario");
-        localStorage.removeItem("token");
+      } catch (error) {
+        console.error("Error parsing user data", error);
+        sessionStorage.clear();
       }
     }
+    setCargando(false);
   }, []);
 
   const login = (usuarioData, tokenData) => {
     setUsuario(usuarioData);
     setToken(tokenData);
-    localStorage.setItem("usuario", JSON.stringify(usuarioData));
-    localStorage.setItem("token", tokenData);
+    // CAMBIO 2: Guardamos en sessionStorage
+    sessionStorage.setItem("usuario", JSON.stringify(usuarioData));
+    sessionStorage.setItem("token", tokenData);
   };
 
   const logout = () => {
     setUsuario(null);
     setToken(null);
-    localStorage.removeItem("usuario");
-    localStorage.removeItem("token");
+    // CAMBIO 3: Limpiamos sessionStorage
+    sessionStorage.clear();
   };
 
-  const isAuthenticated = !!usuario && !!token;
+  if (cargando) {
+    return <div className="text-center p-4">Cargando...</div>;
+  }
 
   return (
-    <AuthContext.Provider
-      value={{ usuario, token, login, logout, isAuthenticated }}
-    >
+    <AuthContext.Provider value={{ usuario, token, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

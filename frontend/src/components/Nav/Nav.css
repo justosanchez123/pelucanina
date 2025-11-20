@@ -1,0 +1,25 @@
+.nav-container {
+  display: flex;
+  justify-content: flex-end; /* empuja todo a la derecha */
+  gap: 10px; /* espacio entre botones */
+  padding: 10px 20px; /* margen interno */
+}
+
+.nav-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 5px;
+  font-weight: bold;
+  cursor: pointer;
+  color: white;
+}
+
+.panel-btn {
+  background-color: #28a745;
+  color: white;
+}
+
+.logout-btn {
+  background-color: #dc3545;
+  color: white;
+}

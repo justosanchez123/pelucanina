@@ -1,0 +1,16 @@
+/backend
+ ├── modelos/
+ │    ├── usuario.js
+ │    ├── dueno.js
+ │    └── mascota.js
+ ├── controladores/
+ │    ├── usuariosController.js
+ │    ├── duenosController.js
+ │    └── mascotasController.js
+ ├── rutas/
+ │    ├── usuariosRoutes.js
+ │    ├── duenosRoutes.js
+ │    └── mascotasRoutes.js
+ ├── server.js
+ └── config/
+      └── db.js

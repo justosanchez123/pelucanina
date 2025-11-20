@@ -5,8 +5,8 @@
   font-weight: 400;
 
   color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  color: rgba(111, 72, 218, 0.87);
+  background-color: #aa3b3b;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -24,12 +24,13 @@ a:hover {
 }
 
 body {
+  background: linear-gradient(45deg, #f803cf, #1d6fbb);
   margin: 0;
-  display: flex;
-  place-items: center;
   min-width: 320px;
   min-height: 100vh;
+  display: block; /* 👈 esto evita interferencia global */
 }
+
 
 h1 {
   font-size: 3.2em;

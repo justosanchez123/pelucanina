@@ -2,7 +2,8 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
 const Usuario = require('../modelos/usuario');
-const Dueno = require('../modelos/dueno');
+// ❌ No necesitamos Dueno acá
+// const Dueno = require('../modelos/dueno');
 
 router.post('/', async (req, res) => {
   try {
@@ -37,22 +38,12 @@ router.post('/', async (req, res) => {
       telefono,
       rol: 'usuario'
     });
+
     await nuevoUsuario.save();
 
-    // 🔗 Crear/asegurar Dueno para que el admin lo vea
-    const duenoExiste = await Dueno.findOne({ email });
-    if (!duenoExiste) {
-      await Dueno.create({
-        nombre: nombres,
-        apellidos,
-        dni,
-        email,
-        telefono,
-        direccion
-      });
-    }
-
+    // ✅ No se crea ningún documento en "duenos" aquí
     res.status(201).json({ success: true, message: 'Usuario creado con éxito' });
+
   } catch (err) {
     console.error('❌ Error en registro:', err);
     res.status(500).json({ success: false, message: 'Error al registrar usuario' });

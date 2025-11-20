@@ -3,7 +3,7 @@ const router = express.Router();
 const Turno = require('../modelos/turno');
 const Dueno = require('../modelos/dueno');
 const Mascota = require('../modelos/mascota');
-const Usuario = require('../modelos/usuario'); // 📌 Importamos Usuario para sincronizar
+const Usuario = require('../modelos/usuario'); 
 const autenticarToken = require('../middlewares/autorizaciones');
 
 // 🟨 Feriados fijos (formato DD-MM-YYYY)
@@ -16,7 +16,7 @@ const diasFeriados = [
   '25-12-2025'
 ];
 
-// 👉 Obtener lista de feriados (para bloquear en calendario del frontend)
+// 👉 Obtener lista de feriados
 router.get('/feriados', autenticarToken, (req, res) => {
   res.json({ feriados: diasFeriados });
 });
@@ -25,8 +25,8 @@ router.get('/feriados', autenticarToken, (req, res) => {
 router.get('/', autenticarToken, async (req, res) => {
   try {
     const turnos = await Turno.find()
-      .populate('dueno', 'nombre apellidos telefono')
-      .populate('mascota', 'nombre');
+      .populate('dueno', 'nombre apellidos telefono email')
+      .populate('mascota', 'nombre raza');
     res.json(turnos);
   } catch (err) {
     console.error(err);
@@ -34,78 +34,59 @@ router.get('/', autenticarToken, async (req, res) => {
   }
 });
 
-// 👉 Crear nuevo turno con validaciones y sincronización de dueño
+// 👉 Crear nuevo turno o bloquear horario
 router.post('/', autenticarToken, async (req, res) => {
   try {
-    const { fecha, hora, mascota, dueno, esUsuario } = req.body;
+    const { fecha, hora, mascota, dueno, bloqueado, nombreCliente } = req.body;
 
-    if (!fecha || !hora || !mascota) {
+    if (!fecha || !hora || (!mascota && !bloqueado)) {
       return res.status(400).json({ mensaje: 'Faltan datos obligatorios' });
     }
 
-    // 🛑 Validar si ya hay un turno en ese horario
-    const turnoExistente = await Turno.findOne({ fecha, hora });
+    // 🛑 VALIDACIÓN ROBUSTA: 
+    // Buscamos si existe un turno ese día, en esa hora específica.
+    // Convertimos la fecha entrante para buscar en el rango del día completo.
+    const fechaBusqueda = new Date(fecha);
+    
+    // Definimos inicio y fin del día para evitar errores de milisegundos/zona horaria
+    const inicioDia = new Date(fechaBusqueda); inicioDia.setHours(0,0,0,0);
+    const finDia = new Date(fechaBusqueda); finDia.setHours(23,59,59,999);
+
+    const turnoExistente = await Turno.findOne({
+      fecha: { $gte: inicioDia, $lte: finDia }, // Busca en todo el día
+      hora: hora // Y que coincida la hora exacta
+    });
+
     if (turnoExistente) {
-      return res.status(409).json({ mensaje: 'Ya existe un turno en ese horario' });
+      // Código 409 significa "Conflicto" (Ya existe)
+      return res.status(409).json({ mensaje: '⚠️ Ese turno ya fue reservado por otro cliente.' });
     }
 
-    // 🐾 Validar si la mascota ya tiene turno ese mismo día
-    const turnoMascota = await Turno.findOne({ fecha, mascota });
-    if (turnoMascota) {
-      return res.status(409).json({ mensaje: 'La mascota ya tiene un turno ese día' });
-    }
-
-    let duenoId = dueno;
-
-    // 📌 Si el turno lo está creando un usuario con cuenta, sincronizamos con Dueno
-    if (esUsuario) {
-      const usuario = await Usuario.findById(dueno);
-      if (!usuario) {
-        return res.status(404).json({ mensaje: 'Usuario no encontrado' });
-      }
-
-      // Buscar dueño por email
-      let duenoExistente = await Dueno.findOne({ email: usuario.email });
-
-      // Si no existe, lo creamos
-      if (!duenoExistente) {
-        const nuevoDueno = new Dueno({
-          nombre: usuario.nombres,
-          apellidos: usuario.apellidos,
-          dni: usuario.dni,
-          email: usuario.email,
-          telefono: usuario.telefono,
-          direccion: usuario.direccion
-        });
-        duenoExistente = await nuevoDueno.save();
-      }
-
-      duenoId = duenoExistente._id;
-    }
-
-    // ✅ Crear turno
+    // ... (resto del código de creación igual) ...
     const nuevoTurno = new Turno({
-      fecha,
+      fecha: fecha, // Mongoose lo guardará bien
       hora,
-      mascota,
-      dueno: duenoId
+      mascota: bloqueado ? null : mascota,
+      dueno: dueno || req.usuario.id,
+      bloqueado: bloqueado || false,
+      nombreCliente: nombreCliente || null
     });
 
     await nuevoTurno.save();
     res.status(201).json(nuevoTurno);
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ mensaje: 'Error interno al crear turno' });
   }
 });
 
+
 // 🟩 Actualizar turno
 router.put('/:id', autenticarToken, async (req, res) => {
   try {
     const actualizado = await Turno.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    if (!actualizado) {
-      return res.status(404).json({ mensaje: 'Turno no encontrado' });
-    }
+    if (!actualizado) return res.status(404).json({ mensaje: 'Turno no encontrado' });
     res.json(actualizado);
   } catch (err) {
     console.error(err);
@@ -117,9 +98,7 @@ router.put('/:id', autenticarToken, async (req, res) => {
 router.delete('/:id', autenticarToken, async (req, res) => {
   try {
     const eliminado = await Turno.findByIdAndDelete(req.params.id);
-    if (!eliminado) {
-      return res.status(404).json({ mensaje: 'Turno no encontrado' });
-    }
+    if (!eliminado) return res.status(404).json({ mensaje: 'Turno no encontrado' });
     res.json({ mensaje: 'Turno eliminado' });
   } catch (err) {
     console.error(err);
@@ -131,9 +110,7 @@ router.delete('/:id', autenticarToken, async (req, res) => {
 router.get('/disponibles', autenticarToken, async (req, res) => {
   try {
     const { fecha } = req.query;
-    if (!fecha) {
-      return res.status(400).json({ mensaje: 'Fecha requerida (DD-MM-YYYY)' });
-    }
+    if (!fecha) return res.status(400).json({ mensaje: 'Fecha requerida (DD-MM-YYYY)' });
 
     const regex = /^\d{2}-\d{2}-\d{4}$/;
     if (!regex.test(fecha)) {
@@ -149,7 +126,6 @@ router.get('/disponibles', autenticarToken, async (req, res) => {
     });
 
     const horariosTomados = turnosDelDia.map(t => t.hora);
-
     const todosHoras = ['08','09','10','11','12','13','14','15','16','17'];
     const disponibles = todosHoras.filter(h => !horariosTomados.includes(h));
 
@@ -157,6 +133,27 @@ router.get('/disponibles', autenticarToken, async (req, res) => {
   } catch (err) {
     console.error('Error en disponibles:', err);
     return res.status(500).json([]);
+  }
+});
+
+// Obtener turnos por dueño
+router.get('/dueno/:id', autenticarToken, async (req, res) => {
+  try {
+    const { rol, id: userId } = req.usuario;
+    const { id } = req.params;
+
+    if (rol === 'usuario' && userId.toString() !== id.toString()) {
+      return res.status(403).json({ mensaje: 'No puedes ver turnos de otro usuario' });
+    }
+
+    const turnos = await Turno.find({ dueno: id })
+      .populate('mascota', 'nombre raza')
+      .lean();
+
+    res.json(turnos);
+  } catch (err) {
+    console.error('❌ Obtener turnos por dueño:', err);
+    res.status(500).json({ mensaje: 'Error interno al obtener turnos' });
   }
 });
 

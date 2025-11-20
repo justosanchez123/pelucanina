@@ -20,38 +20,43 @@ const validarDueno = [
 ];
 
 // Crear dueño
-router.post('/', autenticarToken, verificarRol('adminPrincipal','adminSecundario'), validarDueno, async (req,res)=>{
-  try{
-    const { mascotas, ...datos } = req.body;
-    const nuevo = await Dueno.create(datos);
+router.post(
+  '/',
+  autenticarToken,
+  verificarRol('adminPrincipal', 'adminSecundario'),
+  validarDueno,
+  async (req, res) => {
+    try {
+      const { mascotas, ...datos } = req.body;
+      const nuevo = await Dueno.create(datos);
 
-    if(Array.isArray(mascotas) && mascotas.length){
-      const docs = mascotas.map(m => ({ ...m, dueno: nuevo._id, duenoModel: 'Dueno' }));
-      await Mascota.insertMany(docs);
+      if (Array.isArray(mascotas) && mascotas.length) {
+        const docs = mascotas.map(m => ({ ...m, dueno: nuevo._id, duenoModel: 'Dueno' }));
+        await Mascota.insertMany(docs);
+      }
+
+      res.status(201).json({ mensaje: 'Dueño creado', dueno: nuevo });
+    } catch (error) {
+      console.error('❌ Crear dueño:', error);
+      res.status(500).json({ mensaje: 'Error interno' });
     }
-
-    res.status(201).json({ mensaje:'Dueño creado', dueno: nuevo });
-  }catch(error){
-    console.error('❌ Crear dueño:', error);
-    res.status(500).json({ mensaje:'Error interno' });
   }
-});
+);
 
-// Listar dueños: dueños manuales + usuarios comunes, con sus mascotas
+// Listar dueños (usuarios + dueños manuales)
 router.get(
   '/',
   autenticarToken,
   verificarRol('adminPrincipal', 'adminSecundario'),
   async (req, res) => {
     try {
-      // 1️⃣ Dueños manuales
       const duenosManual = await Dueno.find().lean();
-
-      // 2️⃣ Mascotas de dueños manuales
+      const usuarios = await Usuario.find({ rol: 'usuario' }).lean();
       const mascotas = await Mascota.find().lean();
+
       const mapMascotas = mascotas.reduce((acc, m) => {
         const id = m.dueno.toString();
-        (acc[id] ||= []).push(m); // guardamos el objeto completo
+        (acc[id] ||= []).push(m);
         return acc;
       }, {});
 
@@ -59,19 +64,6 @@ router.get(
         ...d,
         mascotas: mapMascotas[d._id.toString()] || []
       }));
-
-      // 3️⃣ Usuarios tipo 'usuario'
-      const usuarios = await Usuario.find({ rol: 'usuario' }).lean();
-
-      // 4️⃣ Mascotas de usuarios
-      const mascotasUsuarios = mascotas.filter(m =>
-        usuarios.some(u => u._id.toString() === m.dueno.toString())
-      );
-      const mapMascotasUsuarios = mascotasUsuarios.reduce((acc, m) => {
-        const id = m.dueno.toString();
-        (acc[id] ||= []).push(m);
-        return acc;
-      }, {});
 
       const usuariosComoDuenos = usuarios.map(u => ({
         _id: u._id,
@@ -81,13 +73,10 @@ router.get(
         email: u.email,
         telefono: u.telefono || '',
         direccion: u.direccion || '',
-        mascotas: mapMascotasUsuarios[u._id.toString()] || []
+        mascotas: mapMascotas[u._id.toString()] || []
       }));
 
-      // 5️⃣ Unir todo
-      const resultado = [...duenosConMascotas, ...usuariosComoDuenos];
-
-      res.json(resultado);
+      res.json([...duenosConMascotas, ...usuariosComoDuenos]);
     } catch (error) {
       console.error('❌ Obtener dueños:', error);
       res.status(500).json({ mensaje: 'Error interno' });
@@ -95,39 +84,62 @@ router.get(
   }
 );
 
+// Actualizar dueño
+router.put(
+  '/:id',
+  autenticarToken,
+  verificarRol('adminPrincipal', 'adminSecundario'),
+  validarDueno,
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { mascotas, ...datos } = req.body;
 
-// Actualizar dueño + mascotas
-router.put('/:id', autenticarToken, verificarRol('adminPrincipal','adminSecundario'), validarDueno, async (req,res)=>{
-  try{
-    const { mascotas, ...datos } = req.body;
-    const dueno = await Dueno.findByIdAndUpdate(req.params.id, datos, { new:true });
-    if(!dueno) return res.status(404).json({ mensaje:'Dueño no encontrado' });
+      const dueno = await Dueno.findByIdAndUpdate(id, datos, { new: true });
+      if (!dueno) return res.status(404).json({ mensaje: 'Dueño no encontrado' });
 
-    await Mascota.deleteMany({ dueno: dueno._id, duenoModel:'Dueno' });
-    if(Array.isArray(mascotas) && mascotas.length){
-      const docs = mascotas.map(m => ({ ...m, dueno: dueno._id, duenoModel:'Dueno' }));
-      await Mascota.insertMany(docs);
+      // Reemplazar mascotas
+      await Mascota.deleteMany({ dueno: dueno._id, duenoModel: 'Dueno' });
+      if (Array.isArray(mascotas) && mascotas.length) {
+        const docs = mascotas.map(m => ({ ...m, dueno: dueno._id, duenoModel: 'Dueno' }));
+        await Mascota.insertMany(docs);
+      }
+
+      res.json({ mensaje: 'Dueño actualizado', dueno });
+    } catch (error) {
+      console.error('❌ Actualizar dueño:', error);
+      res.status(500).json({ mensaje: 'Error interno' });
     }
-
-    res.json({ mensaje:'Dueño actualizado', dueno });
-  }catch(error){
-    console.error('❌ Actualizar dueño:', error);
-    res.status(500).json({ mensaje:'Error interno' });
   }
-});
+);
 
-// Eliminar dueño + mascotas
-router.delete('/:id', autenticarToken, verificarRol('adminPrincipal','adminSecundario'), async (req,res)=>{
-  try{
-    const dueno = await Dueno.findByIdAndDelete(req.params.id);
-    if(!dueno) return res.status(404).json({ mensaje:'Dueño no encontrado' });
+// Eliminar dueño o usuario + sus mascotas
+router.delete(
+  '/:id',
+  autenticarToken,
+  verificarRol('adminPrincipal', 'adminSecundario'),
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+      let dueno = await Dueno.findById(id);
+      let tipo = 'Dueno';
 
-    await Mascota.deleteMany({ dueno: dueno._id, duenoModel:'Dueno' });
-    res.json({ mensaje:'Dueño eliminado' });
-  }catch(error){
-    console.error('❌ Eliminar dueño:', error);
-    res.status(500).json({ mensaje:'Error interno' });
+      if (!dueno) {
+        dueno = await Usuario.findByIdAndDelete(id);
+        tipo = 'Usuario';
+      } else {
+        await Dueno.findByIdAndDelete(id);
+      }
+
+      if (!dueno) return res.status(404).json({ mensaje: 'Dueño no encontrado' });
+
+      await Mascota.deleteMany({ dueno: id, duenoModel: tipo });
+      res.json({ mensaje: 'Dueño eliminado' });
+    } catch (error) {
+      console.error('❌ Eliminar dueño:', error);
+      res.status(500).json({ mensaje: 'Error interno' });
+    }
   }
-});
+);
 
 module.exports = router;

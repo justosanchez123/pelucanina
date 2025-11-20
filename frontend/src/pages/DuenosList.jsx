@@ -1,17 +1,17 @@
-import React, { useState, useEffect } from "react";
-import api from "../api/axios";
+import { useEffect, useState } from "react";
 import { Table, Button, Modal, Form, InputGroup } from "react-bootstrap";
-
-import { useAuth } from "../context/AuthContext";
+import api from "../api/axios";
+import "./DuenosList.css";
 
 const DuenosList = () => {
-  const { usuario } = useAuth();
   const [duenos, setDuenos] = useState([]);
   const [mascotas, setMascotas] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [busqueda, setBusqueda] = useState("");
 
   const [showAgregarDueno, setShowAgregarDueno] = useState(false);
+  const [showEditarDueno, setShowEditarDueno] = useState(false);
+  const [showAgregarMascota, setShowAgregarMascota] = useState(false);
+
   const [nuevoDueno, setNuevoDueno] = useState({
     nombres: "",
     apellidos: "",
@@ -20,12 +20,9 @@ const DuenosList = () => {
     telefono: "",
     direccion: "",
   });
-
-  const [showEditarDueno, setShowEditarDueno] = useState(false);
   const [duenoEditar, setDuenoEditar] = useState(null);
-
-  const [showAgregarMascota, setShowAgregarMascota] = useState(false);
   const [duenoSeleccionado, setDuenoSeleccionado] = useState(null);
+
   const [nuevaMascota, setNuevaMascota] = useState({
     nombre: "",
     edad: "",
@@ -34,44 +31,36 @@ const DuenosList = () => {
     enfermedades: "",
     observaciones: "",
   });
+  const [mascotaEditar, setMascotaEditar] = useState(null);
 
   // Cargar dueños y mascotas
+  const cargarDuenos = async () => {
+    try {
+      const resDuenos = await api.get("/duenos");
+      setDuenos(resDuenos.data);
+
+      const resMascotas = await api.get("/mascotas");
+      setMascotas(resMascotas.data);
+    } catch (error) {
+      console.error("❌ Error al cargar datos: ", error);
+    }
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const resDuenos = await api.get("/duenos");
-        const resMascotas = await api.get("/mascotas");
-
-        setDuenos(resDuenos.data);
-        setMascotas(resMascotas.data);
-      } catch (error) {
-        console.error("❌ Error al cargar datos:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
+    cargarDuenos();
   }, []);
 
-  // Filtrado
-  const duenosFiltrados = duenos.filter((d) => {
-    if (!d) return false;
-    const nombres = d.nombres || "";
-    const apellidos = d.apellidos || "";
-    const dni = d.dni || "";
-    return (
-      nombres.toLowerCase().includes(busqueda.toLowerCase()) ||
-      apellidos.toLowerCase().includes(busqueda.toLowerCase()) ||
-      dni.includes(busqueda)
-    );
-  });
+  const duenosFiltrados = duenos.filter(
+    (d) =>
+      d.nombres.toLowerCase().includes(busqueda.toLowerCase()) ||
+      d.apellidos.toLowerCase().includes(busqueda.toLowerCase()) ||
+      (d.dni || "").includes(busqueda)
+  );
 
-  // Agregar dueño
+  // ---------- Dueños ----------
   const handleAgregarDueno = async () => {
     try {
-      const res = await api.post("/duenos", nuevoDueno);
-      setDuenos([...duenos, res.data.dueno]);
+      await api.post("/duenos", nuevoDueno);
       setShowAgregarDueno(false);
       setNuevoDueno({
         nombres: "",
@@ -81,43 +70,48 @@ const DuenosList = () => {
         telefono: "",
         direccion: "",
       });
-    } catch (err) {
-      console.error("❌ Error al guardar dueño:", err.response?.data || err);
+      cargarDuenos();
+    } catch (error) {
+      console.error("❌ Error al agregar dueño: ", error);
     }
   };
 
-  // Editar dueño
   const handleEditarDueno = async () => {
     try {
-      const res = await api.put(`/duenos/${duenoEditar._id}`, duenoEditar);
-      setDuenos(
-        duenos.map((d) => (d._id === duenoEditar._id ? res.data.dueno : d))
-      );
+      await api.put(`/duenos/${duenoEditar._id}`, duenoEditar);
       setShowEditarDueno(false);
       setDuenoEditar(null);
-    } catch (err) {
-      console.error("❌ Error al editar dueño:", err.response?.data || err);
+      cargarDuenos();
+    } catch (error) {
+      console.error("❌ Error al editar dueño: ", error);
     }
   };
 
-  // Eliminar dueño
   const handleEliminarDueno = async (id) => {
-    if (!window.confirm("¿Eliminar dueño?")) return;
+    if (!window.confirm("¿Seguro que deseas eliminar este dueño?")) return;
     try {
       await api.delete(`/duenos/${id}`);
-      setDuenos(duenos.filter((d) => d._id !== id));
-    } catch (err) {
-      console.error("❌ Error al eliminar dueño:", err.response?.data || err);
+      cargarDuenos();
+    } catch (error) {
+      console.error("❌ Error al eliminar dueño: ", error);
     }
   };
 
-  // Agregar mascota a dueño o usuario
-  const handleAgregarMascota = async () => {
+  // ---------- Mascotas ----------
+  const handleGuardarMascota = async () => {
     try {
-      await api.post("/mascotas", {
-        ...nuevaMascota,
-        dueno: duenoSeleccionado._id,
-      });
+      if (mascotaEditar) {
+        // Editar mascota existente
+        await api.put(`/mascotas/${mascotaEditar._id}`, nuevaMascota);
+      } else {
+        // Agregar nueva mascota
+        await api.post("/mascotas", {
+          ...nuevaMascota,
+          dueno: duenoSeleccionado._id,
+          duenoModel: "Dueno",
+        });
+      }
+
       setShowAgregarMascota(false);
       setNuevaMascota({
         nombre: "",
@@ -127,11 +121,10 @@ const DuenosList = () => {
         enfermedades: "",
         observaciones: "",
       });
-      // Recargar mascotas
-      const res = await api.get("/mascotas");
-      setMascotas(res.data);
-    } catch (err) {
-      console.error("❌ Error al agregar mascota:", err.response?.data || err);
+      setMascotaEditar(null);
+      cargarDuenos();
+    } catch (error) {
+      console.error("❌ Error al guardar mascota: ", error);
     }
   };
 
@@ -146,10 +139,7 @@ const DuenosList = () => {
         />
       </InputGroup>
 
-      <Button
-        className="mb-3"
-        onClick={() => setShowAgregarDueno(true)}
-      >
+      <Button className="mb-3" onClick={() => setShowAgregarDueno(true)}>
         Agregar Dueño
       </Button>
 
@@ -167,7 +157,21 @@ const DuenosList = () => {
           </tr>
         </thead>
         <tbody>
-          {duenosFiltrados.map((d) => (
+          {[...duenosFiltrados]
+  .sort((a, b) => {
+    const apellidosA = a.apellidos.toLowerCase();
+    const apellidosB = b.apellidos.toLowerCase();
+    if (apellidosA < apellidosB) return -1;
+    if (apellidosA > apellidosB) return 1;
+
+    const nombresA = a.nombres.toLowerCase();
+    const nombresB = b.nombres.toLowerCase();
+    if (nombresA < nombresB) return -1;
+    if (nombresA > nombresB) return 1;
+    return 0;
+  })
+  .map((d) => (
+
             <tr key={d._id}>
               <td>{d.nombres}</td>
               <td>{d.apellidos}</td>
@@ -175,12 +179,7 @@ const DuenosList = () => {
               <td>{d.email || "-"}</td>
               <td>{d.telefono || "-"}</td>
               <td>{d.direccion || "-"}</td>
-              <td>
-                {mascotas
-                  .filter((m) => m.dueno === d._id)
-                  .map((m) => m.nombre)
-                  .join(", ")}
-              </td>
+              <td>{d.mascotas?.map((m) => m.nombre).join(", ")}</td>
               <td>
                 <Button
                   size="sm"
@@ -204,6 +203,15 @@ const DuenosList = () => {
                   variant="primary"
                   onClick={() => {
                     setDuenoSeleccionado(d);
+                    setNuevaMascota({
+                      nombre: "",
+                      edad: "",
+                      raza: "",
+                      peso: "",
+                      enfermedades: "",
+                      observaciones: "",
+                    });
+                    setMascotaEditar(null);
                     setShowAgregarMascota(true);
                   }}
                 >
@@ -224,7 +232,9 @@ const DuenosList = () => {
           {["nombres", "apellidos", "dni", "email", "telefono", "direccion"].map(
             (campo) => (
               <Form.Group key={campo} className="mb-2">
-                <Form.Label>{campo.charAt(0).toUpperCase() + campo.slice(1)}</Form.Label>
+                <Form.Label>
+                  {campo.charAt(0).toUpperCase() + campo.slice(1)}
+                </Form.Label>
                 <Form.Control
                   type="text"
                   value={nuevoDueno[campo]}
@@ -256,7 +266,9 @@ const DuenosList = () => {
             ["nombres", "apellidos", "dni", "email", "telefono", "direccion"].map(
               (campo) => (
                 <Form.Group key={campo} className="mb-2">
-                  <Form.Label>{campo.charAt(0).toUpperCase() + campo.slice(1)}</Form.Label>
+                  <Form.Label>
+                    {campo.charAt(0).toUpperCase() + campo.slice(1)}
+                  </Form.Label>
                   <Form.Control
                     type="text"
                     value={duenoEditar[campo]}
@@ -278,37 +290,37 @@ const DuenosList = () => {
         </Modal.Footer>
       </Modal>
 
-      {/* Modal Agregar Mascota */}
+      {/* Modal Agregar/Editar Mascota */}
       <Modal show={showAgregarMascota} onHide={() => setShowAgregarMascota(false)}>
         <Modal.Header closeButton>
           <Modal.Title>
-            Agregar Mascota a {duenoSeleccionado?.nombres || ""}
+            {mascotaEditar ? "Editar Mascota" : "Agregar Mascota"}
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <Form>
-            {["nombre", "edad", "raza", "peso", "enfermedades", "observaciones"].map(
-              (campo) => (
-                <Form.Group className="mb-2" key={campo}>
-                  <Form.Label>{campo.charAt(0).toUpperCase() + campo.slice(1)}</Form.Label>
-                  <Form.Control
-                    type="text"
-                    value={nuevaMascota[campo]}
-                    onChange={(e) =>
-                      setNuevaMascota({ ...nuevaMascota, [campo]: e.target.value })
-                    }
-                  />
-                </Form.Group>
-              )
-            )}
-          </Form>
+          {["nombre", "edad", "raza", "peso", "enfermedades", "observaciones"].map(
+            (campo) => (
+              <Form.Group key={campo} className="mb-2">
+                <Form.Label>
+                  {campo.charAt(0).toUpperCase() + campo.slice(1)}
+                </Form.Label>
+                <Form.Control
+                  type="text"
+                  value={nuevaMascota[campo]}
+                  onChange={(e) =>
+                    setNuevaMascota({ ...nuevaMascota, [campo]: e.target.value })
+                  }
+                />
+              </Form.Group>
+            )
+          )}
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={() => setShowAgregarMascota(false)}>
             Cancelar
           </Button>
-          <Button variant="primary" onClick={handleAgregarMascota}>
-            Guardar Mascota
+          <Button variant="primary" onClick={handleGuardarMascota}>
+            {mascotaEditar ? "Guardar Cambios" : "Agregar Mascota"}
           </Button>
         </Modal.Footer>
       </Modal>

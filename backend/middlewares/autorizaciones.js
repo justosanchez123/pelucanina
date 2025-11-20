@@ -9,11 +9,22 @@ async function autenticarToken(req, res, next) {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    console.log(decoded);
-    const usuario = await Usuario.findById(decoded.id);
-    if (!usuario) return res.status(404).json({ mensaje: 'Usuario no encontrado' });
+    console.log("📥 Decoded JWT:", decoded);
 
-    req.usuario = { id: usuario._id, email: usuario.email, rol: usuario.rol };
+    const usuario = await Usuario.findById(decoded.id);
+
+    if (!usuario) {
+      return res.status(404).json({ mensaje: 'Usuario no encontrado' });
+    }
+
+    // Si en DB no hay rol, usamos el del token
+    req.usuario = {
+      id: usuario._id,
+      email: usuario.email,
+      rol: usuario.rol || decoded.rol
+    };
+
+    console.log("✅ Usuario autenticado:", req.usuario);
     next();
   } catch (err) {
     console.error('Error al verificar token:', err);
@@ -22,3 +33,4 @@ async function autenticarToken(req, res, next) {
 }
 
 module.exports = autenticarToken;
+

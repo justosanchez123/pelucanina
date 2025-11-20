@@ -1,0 +1,141 @@
+/* Contenedor principal */
+.container {
+  max-width: 1000px;
+  margin: auto;
+  padding: 20px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f9f9f9;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+/* Título */
+h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+/* InputGroup de búsqueda */
+.input-group {
+  margin-bottom: 15px;
+}
+
+.form-control {
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  padding: 8px 12px;
+  transition: all 0.2s ease-in-out;
+}
+
+.form-control:focus {
+  border-color: #5a9bd5;
+  box-shadow: 0 0 5px rgba(90, 155, 213, 0.5);
+}
+
+/* Botón Agregar Mascota */
+.btn-agregar {
+  background-color: #5a9bd5;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  transition: all 0.2s;
+}
+
+.btn-agregar:hover {
+  background-color: #4178a0;
+}
+
+/* Tabla de mascotas */
+.tabla-mascotas {
+  background-color: white;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.tabla-mascotas th, .tabla-mascotas td {
+  text-align: center;
+  vertical-align: middle;
+}
+
+.tabla-mascotas tbody tr:hover {
+  background-color: #f0f8ff;
+  transition: background-color 0.2s;
+}
+
+/* Botones dentro de la tabla */
+.btn-sm {
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 0.85rem;
+  margin: 2px;
+}
+
+.btn-warning {
+  background-color: #594ef0;
+  border: none;
+  color: white;
+  transition: all 0.2s;
+}
+
+.btn-warning:hover {
+  background-color: #d9953f;
+}
+
+.btn-danger {
+  background-color: #d9534f;
+  border: none;
+  color: white;
+  transition: all 0.2s;
+}
+
+.btn-danger:hover {
+  background-color: #c9302c;
+}
+
+/* Badges */
+.badge {
+  font-size: 0.85rem;
+  padding: 5px 8px;
+  border-radius: 8px;
+}
+
+.badge-danger {
+  background-color: #1a1919;
+}
+
+.badge-info {
+  background-color: #5bc0de;
+}
+
+/* Modal */
+.modal-content {
+  border-radius: 12px;
+  padding: 15px;
+}
+
+.modal-header {
+  border-bottom: 1px solid #ddd;
+}
+
+.modal-footer {
+  border-top: 1px solid #ddd;
+}
+
+/* Form Labels */
+.form-label {
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+
+/* Form Controls */
+.form-control {
+  margin-bottom: 10px;
+  border-radius: 6px;
+}
+
+/* Hover general */
+button:hover, .btn:hover {
+  cursor: pointer;
+}

@@ -1,4 +1,4 @@
-// src/pages/Turnos.jsx
+/// src/pages/Turnos.jsx
 import { useState, useEffect } from "react";
 import api from "../api/axios";
 import { useAuth } from "../context/AuthContext";
@@ -7,6 +7,7 @@ const Turnos = () => {
   const { usuario } = useAuth();
   const [mascotas, setMascotas] = useState([]);
   const [turnos, setTurnos] = useState([]);
+  const [horasDisponibles, setHorasDisponibles] = useState([]);
   const [form, setForm] = useState({
     mascota: "",
     fecha: "",
@@ -33,6 +34,17 @@ const Turnos = () => {
     }
   };
 
+  // 📌 Obtener horas disponibles para la fecha seleccionada
+  const fetchDisponibles = async (fecha) => {
+    if (!fecha) return;
+    try {
+      const res = await api.get(`/turnos/disponibles?fecha=${fecha}`);
+      setHorasDisponibles(res.data);
+    } catch (err) {
+      console.error("❌ Error cargando horarios:", err);
+    }
+  };
+
   useEffect(() => {
     if (usuario?._id) {
       fetchMascotas();
@@ -43,6 +55,11 @@ const Turnos = () => {
   // 📌 Manejo de inputs
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+
+    // Si cambia la fecha, traemos horas disponibles
+    if (e.target.name === "fecha") {
+      fetchDisponibles(e.target.value);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -76,6 +93,7 @@ const Turnos = () => {
             </option>
           ))}
         </select>
+
         <input
           type="date"
           name="fecha"
@@ -84,14 +102,23 @@ const Turnos = () => {
           className="border p-2 rounded w-full"
           required
         />
-        <input
-          type="time"
+
+        <select
           name="hora"
           value={form.hora}
           onChange={handleChange}
           className="border p-2 rounded w-full"
           required
-        />
+          disabled={!form.fecha}
+        >
+          <option value="">Seleccionar Horario</option>
+          {horasDisponibles.map((h) => (
+            <option key={h} value={h}>
+              {h}:00
+            </option>
+          ))}
+        </select>
+
         <button
           type="submit"
           className="bg-green-600 text-white px-4 py-2 rounded"
@@ -108,7 +135,13 @@ const Turnos = () => {
           <ul className="space-y-2">
             {turnos.map((t) => (
               <li key={t._id} className="border p-2 rounded">
-                🐾 {t.mascota?.nombre} — {t.fecha} {t.hora}
+                {t.bloqueado ? (
+                  <span className="text-red-600">⛔ Bloqueado ({t.motivo})</span>
+                ) : (
+                  <>
+                    🐾 {t.mascota?.nombre} — {new Date(t.fecha).toLocaleDateString()} {t.hora}:00
+                  </>
+                )}
               </li>
             ))}
           </ul>

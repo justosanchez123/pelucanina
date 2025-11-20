@@ -1,6 +1,6 @@
 // src/pages/Login.jsx
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import paw from "../assets/paw.png";
 import "./Login.css";
@@ -10,7 +10,7 @@ import api from "../api/axios";
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [errorMsg, setErrorMsg] = useState(""); // <-- Estado para el mensaje de error
+  const [errorMsg, setErrorMsg] = useState("");
   const { login } = useAuth();
   const navigate = useNavigate();
 
@@ -18,11 +18,13 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setErrorMsg(""); // limpiar mensaje previo
+    setErrorMsg("");
 
     try {
       const res = await api.post("/login", { email, password });
       const data = res.data;
+
+      console.log("📥 Respuesta del backend (Login):", data);
 
       if (!data || !data.token || !data.usuario) {
         setErrorMsg("Respuesta inválida del servidor");
@@ -31,17 +33,18 @@ const Login = () => {
 
       login(data.usuario, data.token);
 
+      console.log("💾 LocalStorage usuario:", localStorage.getItem("usuario"));
+      console.log("💾 LocalStorage token:", localStorage.getItem("token"));
+
       if (data.usuario.rol === "adminPrincipal") {
         navigate("/admin");
       } else {
         navigate("/usuario");
       }
-
     } catch (error) {
       if (error.response) {
         const status = error.response.status;
         const mensaje = error.response.data?.mensaje || "Error del servidor";
-
         if (status === 404) {
           setErrorMsg("Usuario o contraseña incorrectos");
         } else {
@@ -82,6 +85,7 @@ const Login = () => {
               required
             />
           </div>
+
           <div style={{ marginBottom: "1rem" }}>
             <input
               type="password"
@@ -104,6 +108,11 @@ const Login = () => {
             Entrar
           </button>
         </form>
+
+        {/* Acceso al registro */}
+        <p style={{ marginTop: "1rem" }}>
+          ¿No tienes cuenta? <Link to="/registro">Regístrate aquí</Link>
+        </p>
       </div>
     </div>
   );

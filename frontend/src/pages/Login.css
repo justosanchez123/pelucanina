@@ -2,7 +2,7 @@
   position: relative;
   width: 100vw;
   height: 100vh;
-  background: #fefcf5; /* fondo claro tipo peluquería */
+  background: linear-gradient(45deg, #f803cf, #1d6fbb); /* Degradado diagonal */
   display: flex;
   justify-content: center;
   align-items: center;

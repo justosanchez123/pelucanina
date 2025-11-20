@@ -1,0 +1,199 @@
+/* =========================================
+   ESTILOS ESPECÍFICOS DEL PANEL DE USUARIO
+   Prefijo usado: .user-
+   ========================================= */
+
+/* Contenedor principal */
+.user-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Header del Usuario */
+.user-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  flex-wrap: wrap;
+  margin-bottom: 2rem;
+  border-bottom: 2px solid #eee;
+  padding-bottom: 10px;
+}
+
+.user-header h2 {
+  margin: 0;
+  color: #333;
+}
+
+/* Sección Mis Mascotas */
+.user-mascotas-section {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.user-title-mascotas {
+  font-size: 1.8rem;
+  color: #444;
+  margin: 0;
+}
+
+/* Botón Agregar (Específico Usuario) */
+.user-btn-add {
+  background-color: #2196f3; /* Azul */
+  color: white;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: transform 0.2s, box-shadow 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.user-btn-add:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 8px rgba(33, 150, 243, 0.4);
+}
+
+/* Grid de Cards */
+.user-cards-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 25px;
+  width: 100%;
+}
+
+/* CARD ESPECÍFICA DE USUARIO (La colorida) */
+.user-card {
+  background: linear-gradient(135deg, #2f9bda, #c2459c) !important;
+  color: white;
+  border-radius: 15px;
+  padding: 1.5rem;
+  width: 260px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+  transition: transform 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.user-card:hover {
+  transform: translateY(-8px) scale(1.02);
+}
+
+.user-card h3 {
+  margin-top: 0;
+  border-bottom: 1px solid rgba(255,255,255,0.3);
+  padding-bottom: 0.5rem;
+}
+
+.user-card p {
+  margin: 0.5rem 0;
+  font-size: 0.95rem;
+}
+
+/* Botones dentro de la card */
+.user-card-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 1.5rem;
+  gap: 10px;
+}
+
+.user-btn-edit {
+  background-color: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 1px solid white;
+  padding: 0.4rem 0.8rem;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.user-btn-edit:hover {
+  background-color: rgba(255, 255, 255, 0.4);
+}
+
+.user-btn-delete {
+  background-color: #ff4d4d;
+  color: white;
+  border: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.user-btn-delete:hover {
+  background-color: #cc0000;
+}
+
+/* Turnos */
+.user-turnos-section {
+  margin-top: 3rem;
+  width: 100%;
+  background-color: #f9f9f9;
+  padding: 2rem;
+  border-radius: 12px;
+}
+
+
+
+
+.user-btn-edit, 
+.user-btn-delete {
+  background-color: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  padding: 4px 8px;  /* <--- Menos relleno */
+  font-size: 0.8rem; /* <--- Letra más chica */
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.user-btn-edit:hover {
+  background-color: rgba(255, 255, 255, 0.4);
+  transform: scale(1.05);
+}
+
+.user-btn-delete:hover {
+  background-color: #ff4d4d;
+  border-color: #ff4d4d;
+}
+
+/* Ajuste para el botón Reservar (Compacto pero visible) */
+.user-btn-reservar {
+  background-color: #fff;
+  color: #2f9bda;
+  border: none;
+  border-radius: 20px; /* <--- Más redondeado */
+  padding: 5px 12px;   /* <--- Tamaño controlado */
+  font-size: 0.85rem;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  transition: transform 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.user-btn-reservar:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
