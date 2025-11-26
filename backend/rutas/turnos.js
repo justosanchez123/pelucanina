@@ -34,40 +34,69 @@ router.get('/', autenticarToken, async (req, res) => {
   }
 });
 
-// 👉 Crear nuevo turno o bloquear horario
+// 👉 Crear nuevo turno o bloquear horario (MODIFICADO)
 router.post('/', autenticarToken, async (req, res) => {
   try {
-    const { fecha, hora, mascota, dueno, bloqueado, nombreCliente } = req.body;
+    // 1. Obtenemos datos del body y del usuario autenticado
+    let { fecha, hora, mascota, dueno, bloqueado, nombreCliente } = req.body;
+    const { rol, id: usuarioId } = req.usuario;
 
-    if (!fecha || !hora || (!mascota && !bloqueado)) {
-      return res.status(400).json({ mensaje: 'Faltan datos obligatorios' });
+    // 2. Validación de campos básicos
+    if (!fecha || !hora) {
+      return res.status(400).json({ mensaje: 'Faltan datos obligatorios (fecha y hora)' });
     }
 
-    // 🛑 VALIDACIÓN ROBUSTA: 
-    // Buscamos si existe un turno ese día, en esa hora específica.
-    // Convertimos la fecha entrante para buscar en el rango del día completo.
-    const fechaBusqueda = new Date(fecha);
+    // ==================================================================
+    // 🔒 BLINDAJE DE ROLES (Seguridad Backend)
+    // ==================================================================
+    if (rol === 'usuario') {
+      // Si es Usuario: LE IMPONEMOS SUS DATOS
+      dueno = usuarioId;      // El dueño es EL MISMO, no puede asignar a otro
+      bloqueado = false;      // No puede bloquear horarios
+      nombreCliente = null;   // No puede poner nombres a mano
+      
+      // El usuario OBLIGATORIAMENTE debe mandar mascota
+      if (!mascota) {
+        return res.status(400).json({ mensaje: 'Debes seleccionar una mascota' });
+      }
+    } 
     
-    // Definimos inicio y fin del día para evitar errores de milisegundos/zona horaria
-    const inicioDia = new Date(fechaBusqueda); inicioDia.setHours(0,0,0,0);
-    const finDia = new Date(fechaBusqueda); finDia.setHours(23,59,59,999);
+    // Si es Admin: Permitimos que 'dueno', 'mascota' y 'bloqueado' vengan del body
+    // Pero validamos que al menos haya mascota O bloqueo
+    if (rol !== 'usuario' && !mascota && !bloqueado) {
+       return res.status(400).json({ mensaje: 'Debes indicar una mascota o bloquear el turno' });
+    }
+
+    // ==================================================================
+    // 🛡️ CORRECCIÓN DE FECHA (Estrategia del Mediodía)
+    // ==================================================================
+    // Convertimos la fecha recibida y la forzamos a las 12:00 PM UTC
+    // Esto evita el error de "un día antes" por la diferencia horaria
+    const fechaProcesada = new Date(fecha);
+    fechaProcesada.setUTCHours(12, 0, 0, 0);
+
+    // ==================================================================
+    // 🛑 VALIDACIÓN DE DISPONIBILIDAD
+    // ==================================================================
+    // Definimos el rango del día usando la fecha ya corregida
+    const inicioDia = new Date(fechaProcesada); inicioDia.setHours(0,0,0,0);
+    const finDia = new Date(fechaProcesada); finDia.setHours(23,59,59,999);
 
     const turnoExistente = await Turno.findOne({
-      fecha: { $gte: inicioDia, $lte: finDia }, // Busca en todo el día
-      hora: hora // Y que coincida la hora exacta
+      fecha: { $gte: inicioDia, $lte: finDia }, 
+      hora: hora 
     });
 
     if (turnoExistente) {
-      // Código 409 significa "Conflicto" (Ya existe)
-      return res.status(409).json({ mensaje: '⚠️ Ese turno ya fue reservado por otro cliente.' });
+      return res.status(409).json({ mensaje: '⚠️ Ese turno ya fue reservado.' });
     }
 
-    // ... (resto del código de creación igual) ...
+    // ✅ CREAR TURNO
     const nuevoTurno = new Turno({
-      fecha: fecha, // Mongoose lo guardará bien
+      fecha: fechaProcesada, // Usamos la fecha corregida
       hora,
       mascota: bloqueado ? null : mascota,
-      dueno: dueno || req.usuario.id,
+      dueno: dueno, // Usamos el dueño seguro
       bloqueado: bloqueado || false,
       nombreCliente: nombreCliente || null
     });
@@ -76,7 +105,7 @@ router.post('/', autenticarToken, async (req, res) => {
     res.status(201).json(nuevoTurno);
 
   } catch (err) {
-    console.error(err);
+    console.error('Error creando turno:', err);
     res.status(500).json({ mensaje: 'Error interno al crear turno' });
   }
 });

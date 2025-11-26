@@ -1,42 +1,44 @@
+// src/components/Nav/Nav.jsx
 import React from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import "./Nav.css";
+
+// --- NUEVA LÍNEA: Importamos la imagen ---
+// NOTA: Los "../.." son para subir dos niveles desde la carpeta Nav hasta llegar a src
+import logoImg from '../../assets/dog.png'; 
 
 const Nav = () => {
   const { usuario, logout } = useAuth();
 
   return (
     <nav className="nav-container">
-      {/* Izquierda: Logo */}
+      {/* === PARTE IZQUIERDA: EL LOGO === */}
       <div className="nav-left">
-        <Link to="/" className="logo">🐾 Dog & Roll</Link>
+        <Link to="/" className="nav-logo">
+          {/* --- CAMBIO AQUÍ: Reemplazamos el emoji 🐾 por la etiqueta <img> --- */}
+          <img src={logoImg} alt="Logo Dog & Roll" className="nav-logo-img" />
+          
+          <span className="nav-logo-text">Dog & Roll-Peluquería Canina</span>
+        </Link>
       </div>
 
-      {/* Derecha: Botones dinámicos */}
+      {/* === PARTE DERECHA: LOS BOTONES (Esto sigue igual) === */}
       <div className="nav-right">
-        
-        {/* Si NO hay usuario, mostramos Login */}
         {!usuario && (
-          <Link to="/login" className="nav-btn">Login</Link>
+          <Link to="/login" className="nav-btn login-btn">Login</Link>
         )}
-
-        {/* Si SÍ hay usuario, mostramos Panel y Logout */}
         {usuario && (
           <>
-            <span style={{ marginRight: '10px', color: 'white' }}>
-              Hola, {usuario.nombre || 'Usuario'} 👋
+            <span className="nav-saludo">
+              Hola, {usuario.nombres || 'Usuario'} 👋
             </span>
-            
-            {/* Botón para volver al panel según rol */}
             <Link 
-              to={usuario.rol === 'adminPrincipal' ? '/admin' : '/usuario'} 
-              className="nav-btn"
-              style={{ marginRight: '10px', backgroundColor: '#4a4a4a' }}
+              to={usuario.rol?.startsWith('admin') ? '/admin' : '/usuario'} 
+              className="nav-btn panel-btn"
             >
               Mi Panel
             </Link>
-
             <button className="nav-btn logout-btn" onClick={logout}>
               Salir
             </button>

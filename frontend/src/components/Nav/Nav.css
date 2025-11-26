@@ -1,8 +1,68 @@
+/* src/components/Nav/Nav.css */
+
+/* Contenedor principal */
 .nav-container {
   display: flex;
-  justify-content: flex-end; /* empuja todo a la derecha */
-  gap: 10px; /* espacio entre botones */
-  padding: 10px 20px; /* margen interno */
+  justify-content: space-between;
+  align-items: center;
+  background-color: #2c3e50;
+  padding: 0.8rem 2rem;
+  color: white;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  height: 70px; /* (Opcional) Fijamos una altura para el navbar */
+}
+
+/* --- ESTILOS DEL LOGO (Izquierda) --- */
+.nav-left {
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+.nav-logo {
+  text-decoration: none;
+  color: white;
+  font-size: 1.8rem;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  
+  /* AGREGAMOS ESTA LÍNEA: Define el punto de anclaje arriba a la izquierda */
+  transform-origin: top left; 
+
+  /* Suavizamos la transición */
+  transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* --- NUEVO: Estilos para tu imagen PNG --- */
+.nav-logo-img {
+  height: 80px; /* Ajusta esta altura según necesites */
+  width: auto;  /* Mantiene la proporción de la imagen */
+  object-fit: contain; /* Asegura que la imagen se vea completa */
+}
+
+.nav-logo:hover {
+  transform: scale(2.05);
+}
+
+/* EFECTO HOVER ACTUALIZADO */
+.nav-logo:hover {
+  /* Usamos SCALE de nuevo. Al tener el origin en top-left,
+     crecerá hacia abajo y la derecha. */
+  transform: scale(1.50); /* Aumenté un poco el valor para que se note más el efecto */
+}
+
+/* --- ESTILOS DE LOS BOTONES (Derecha) - (Siguen igual) --- */
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.nav-saludo {
+  font-size: 0.95rem;
+  color: #ecf0f1;
 }
 
 .nav-btn {
@@ -10,16 +70,23 @@
   border: none;
   border-radius: 5px;
   font-weight: bold;
+  text-decoration: none;
   cursor: pointer;
-  color: white;
+  transition: background-color 0.2s, transform 0.2s;
+  font-size: 0.9rem;
 }
 
-.panel-btn {
-  background-color: #28a745;
-  color: white;
+.nav-btn:hover {
+  transform: translateY(-2px);
 }
 
-.logout-btn {
-  background-color: #dc3545;
-  color: white;
-}
+.login-btn { background-color: #3498db; color: white; }
+.login-btn:hover { background-color: #2980b9; }
+
+.panel-btn { background-color: #f1c40f; color: #2c3e50; }
+.panel-btn:hover { background-color: #d4ac0d; }
+
+.logout-btn { background-color: #e74c3c; color: white; }
+.logout-btn:hover { background-color: #c0392b; }
+
+

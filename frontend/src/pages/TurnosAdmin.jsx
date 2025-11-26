@@ -100,13 +100,24 @@ const TurnosAdmin = () => {
       return fechaTurno === fechaSeleccionada && t.hora === hora;
     });
   };
-
-  // FILTRO CORREGIDO (String vs String)
+   
   const mascotasFiltradas = listaMascotas.filter(m => {
-      const idDuenoMascota = typeof m.dueno === 'object' && m.dueno !== null ? m.dueno._id : m.dueno;
-      // Convertimos a String para evitar error de ObjectId !== String
+      const idDuenoMascota = typeof m.dueno === 'object' && m.dueno !== null ? m.dueno._id : m.dueno;   
       return String(idDuenoMascota) === String(duenoSeleccionado);
   });
+
+const turnosOrdenados = [...todosLosTurnos].sort((a, b) => {
+    return new Date(b.fecha) - new Date(a.fecha);
+  });
+
+  // Helper para obtener "Mes Año" (Ej: "Noviembre 2025")
+  const obtenerMesAno = (fechaISO) => {
+    const fecha = new Date(fechaISO);
+    // Truco para capitalizar la primera letra (noviembre -> Noviembre)
+    const mes = fecha.toLocaleString('es-ES', { month: 'long', year: 'numeric' });
+    return mes.charAt(0).toUpperCase() + mes.slice(1);
+  };
+
 
   return (
     <div className="admin-turnos-container">
@@ -160,35 +171,82 @@ const TurnosAdmin = () => {
       </div>
 
       {/* TABLA HISTÓRICA */}
-      <h3 style={{ marginTop: "40px", borderBottom: "2px solid #eee", paddingBottom: "10px" }}>
-        📑 Listado Completo
+      <h3 style={{ marginTop: "40px", borderBottom: "2px solid #eeeeee", paddingBottom: "10px" }}>
+        📑 Listado Histórico
       </h3>
+
       <div style={{ overflowX: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "10px" }}>
-            <thead>
-              <tr style={{ backgroundColor: "#2c3e50", color: "white" }}>
-                <th style={{ padding: "10px" }}>Fecha</th>
-                <th style={{ padding: "10px" }}>Hora</th>
-                <th style={{ padding: "10px" }}>Mascota</th>
-                <th style={{ padding: "10px" }}>Acción</th>
-              </tr>
-            </thead>
-            <tbody>
-              {todosLosTurnos.map((t) => (
-                <tr key={t._id} style={{ borderBottom: "1px solid #ddd", textAlign: "center" }}>
-                  <td style={{ padding: "10px" }}>{new Date(t.fecha).toLocaleDateString()}</td>
-                  <td style={{ padding: "10px" }}>{t.hora}:00</td>
-                  <td style={{ padding: "10px" }}>{t.mascota?.nombre || "-"}</td>
-                  <td style={{ padding: "10px" }}>
-                    <button onClick={() => handleCancelarTurno(t._id)} style={{ backgroundColor: "red", color: "white", border: "none", padding: "5px 10px", borderRadius: "4px", cursor: "pointer" }}>
+        <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "10px" }}>
+          <thead>
+            <tr style={{ backgroundColor: "#2c3e50", color: "white" }}>
+              <th style={{ padding: "12px" }}>Fecha</th>
+              <th style={{ padding: "12px" }}>Hora</th>
+              {/* Nueva Columna solicitada bien explícita */}
+              <th style={{ padding: "12px" }}>Cliente (Dueño)</th> 
+              <th style={{ padding: "12px" }}>Mascota</th>
+              <th style={{ padding: "12px" }}>Contacto</th>
+              <th style={{ padding: "12px" }}>Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+            {turnosOrdenados.map((t, index) => {
+              const mesActual = obtenerMesAno(t.fecha);
+              
+              // Miramos el turno anterior para ver si cambió el mes
+              const turnoAnterior = turnosOrdenados[index - 1];
+              const mesAnterior = turnoAnterior ? obtenerMesAno(turnoAnterior.fecha) : null;
+              
+              const mostrarSeparador = mesActual !== mesAnterior;
+
+              return (
+                <React.Fragment key={t._id}>
+                  {/* SEPARADOR DE MES */}
+                  {mostrarSeparador && (
+                    <tr style={{ backgroundColor: "#e9ecef" }}>
+                      <td colSpan="6" style={{ padding: "10px 15px", fontWeight: "bold", color: "#495057", textTransform: "uppercase", letterSpacing: "1px" }}>
+                        📅 {mesActual}
+                      </td>
+                    </tr>
+                  )}
+
+                  {/* FILA DE DATOS */}
+                  <tr style={{ borderBottom: "1px solid #ddd", textAlign: "center", backgroundColor: "#49505705" }}>
+                    <td style={{ padding: "10px" }}>
+                      {new Date(t.fecha).toLocaleDateString()}
+                    </td>
+                    <td style={{ padding: "10px", fontWeight: 'bold' }}>
+                      {t.hora}:00
+                    </td>
+                    
+                    {/* COLUMNA NOMBRE Y APELLIDO (Bien destacada) */}
+                    <td style={{ padding: "10px", textAlign: 'left' }}>
+                      <div style={{fontWeight: 'bold', color: '#132631ff'}}>
+                        {t.dueno?.nombres} {t.dueno?.apellidos}
+                      </div>
+                    </td>
+
+                    <td style={{ padding: "10px" }}>
+                      {t.mascota?.nombre || <span style={{color:'#ccc'}}>- Eliminada -</span>}
+                    </td>
+
+                    {/* Columna extra para email/teléfono para no ensuciar el nombre */}
+                    <td style={{ padding: "10px", fontSize: '0.85rem', color: '#130707ff' }}>
+                      {t.dueno?.email} <br/>
+                      {t.dueno?.telefono || ''}
+                    </td>
+
+                    <td style={{ padding: "10px" }}>
+                      <button onClick={() => handleCancelarTurno(t._id)} style={{ backgroundColor: "red", color: "white", border: "none", padding: "5px 10px", borderRadius: "4px", cursor: "pointer" }}>
                       Cancelar
                     </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                    </td>
+                  </tr>
+                </React.Fragment>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
 
       {/* === MODAL === */}
       {modalAbierto && (

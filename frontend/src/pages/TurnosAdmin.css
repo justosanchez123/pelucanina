@@ -81,42 +81,48 @@
 /* IMPORTANTE: Estilos para que el Modal sea visible */
 .modal-overlay {
   position: fixed;
-  top: 0; 
-  left: 0; 
-  width: 100%; 
-  height: 100%;
-  background: rgba(0,0,0,0.5); /* Fondo oscuro semitransparente */
+  top: 0;
+  left: 0;
+  width: 100vw;  /* Ancho total de la ventana */
+  height: 100vh; /* Alto total de la ventana */
+  background-color: rgba(0, 0, 0, 0.6); /* Negro al 60% de opacidad */
+  backdrop-filter: blur(3px); /* Efecto vidrio borroso en el fondo (opcional) */
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 9999; /* Muy alto para estar encima de todo */
+  z-index: 9999; /* Muy alto para tapar todo */
 }
 
+/* 2. La tarjeta del formulario (El cuadro blanco) */
 .modal-content {
-  background: white;
+  background-color: #ffffff !important; /* BLANCO SÓLIDO (El !important evita conflictos) */
+  color: #333333; /* Texto oscuro para contraste */
   padding: 2rem;
-  border-radius: 10px;
-  width: 400px;
+  border-radius: 12px;
+  width: 450px;
   max-width: 90%;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-  position: relative; /* Para contener elementos */
-}
-
-.modal-actions {
+  
+  /* Sombra fuerte para que se despegue del fondo */
+  box-shadow: 0 10px 25px rgba(0,0,0,0.5); 
+  
+  position: relative;
   display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 20px;
+  flex-direction: column;
+  gap: 15px;
 }
 
-.form-group {
-    margin-bottom: 15px;
-}
-
+/* Ajustes de los inputs dentro del modal */
 .form-control {
-    width: 100%;
-    padding: 8px;
-    margin-top: 5px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
+  background-color: #fff; /* Fondo blanco para los inputs */
+  border: 1px solid #ccc;
+  color: #000;
+  font-size: 1rem;
+}
+
+/* Título del modal */
+.modal-content h3 {
+  margin-top: 0;
+  color: #2f9bda;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
 }
