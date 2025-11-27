@@ -179,3 +179,51 @@
   from {transform: translateY(-20px); opacity: 0;}
   to {transform: translateY(0); opacity: 1;}
 }
+
+
+
+/* Estilo de Metal Limado Acerado */
+.card-metal {
+  background-color: #b0c4de; /* Color base acero azulado */
+  background-image: 
+    repeating-linear-gradient(
+      90deg,
+      transparent 0,
+      transparent 1px,
+      rgba(0, 0, 0, 0.08) 1px,
+      rgba(0, 0, 0, 0.08) 2px
+    ),
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.5) 0%,
+      rgba(255, 255, 255, 0) 40%,
+      rgba(0, 0, 0, 0.2) 100%
+    );
+  background-blend-mode: overlay; /* Mezcla las texturas para un efecto más realista */
+  border: 2px solid #8fa0b3; /* Borde metálico */
+  box-shadow: 
+    inset 1px 1px 3px rgba(255, 255, 255, 0.7),
+    inset -1px -1px 3px rgba(0, 0, 0, 0.3),
+    0 4px 8px rgba(0, 0, 0, 0.3); /* Sombras para profundidad */
+  color: #333; /* Color de texto oscuro para contraste */
+}
+
+/* Ajustes para los elementos dentro de la tarjeta metálica */
+.card-metal h1,
+.card-metal h4 {
+  color: #222;
+  text-shadow: 1px 1px 1px rgba(255, 255, 255, 0.5); /* Sutil sombra para el texto */
+}
+
+.card-metal hr {
+  border-color: #8fa0b3; /* Color de la línea horizontal */
+  opacity: 0.6;
+}
+
+.card-metal .list-group-item {
+  /* Usa !important para asegurar que este fondo se aplique sobre el de .card */
+  background-color: rgba(255, 255, 255, 0.2) !important; /* Fondo más transparente */
+  border-color: #8fa0b3;
+  color: #333;
+  border-width: 1px; /* Asegura que el borde sea visible */
+}
