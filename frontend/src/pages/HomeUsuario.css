@@ -1,199 +1,236 @@
-/* =========================================
-   ESTILOS ESPECÍFICOS DEL PANEL DE USUARIO
-   Prefijo usado: .user-
-   ========================================= */
+/* src/pages/HomeUsuario.css */
 
-/* Contenedor principal */
+/* ==============================================
+   CONTENEDOR PRINCIPAL
+   ============================================== */
 .user-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 2rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  /* 1. Comportamiento de contenedor (centrado) */
+  width: 100%;
+  max-width: 1200px; /* Ancho máximo estándar */
+  margin-right: auto;
+  margin-left: auto;
+  padding: 3rem 1.5rem; /* Espaciado interno */
+
+  /* 2. Forzar fondo transparente para ver el negro global */
+  background-color: transparent !important; 
+  background: none !important;
+  box-shadow: none !important;
+  border: none !important;
+  
+  /* 3. Asegurar texto blanco */
+  color: white;
+  min-height: 85vh; 
 }
 
-/* Header del Usuario */
-.user-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  flex-wrap: wrap;
-  margin-bottom: 2rem;
-  border-bottom: 2px solid #eee;
+/* ==============================================
+   TIPOGRAFÍA ROCKERA
+   ============================================== */
+.title-rock {
+  font-weight: 900;
+  text-transform: uppercase;
+  color: white;
+  text-shadow: 0 0 15px rgba(255, 255, 255, 0.15);
+  margin-bottom: 0;
+}
+
+.subtitle-rock {
+  font-weight: 800;
+  color: var(--neon-blue, #00d4ff);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-bottom: 2px solid var(--neon-blue, #00d4ff);
   padding-bottom: 10px;
+  margin-bottom: 20px;
 }
 
-.user-header h2 {
-  margin: 0;
-  color: #333;
-}
-
-/* Sección Mis Mascotas */
-.user-mascotas-section {
-  width: 100%;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 1rem;
-  margin-bottom: 1.5rem;
-}
-
-.user-title-mascotas {
-  font-size: 1.8rem;
-  color: #444;
-  margin: 0;
-}
-
-/* Botón Agregar (Específico Usuario) */
-.user-btn-add {
-  background-color: #2196f3; /* Azul */
-  color: white;
-  border: none;
-  padding: 0.6rem 1.2rem;
+/* ==============================================
+   TARJETAS DE MASCOTAS (Estilo Ticket)
+   ============================================== */
+.pet-card {
+  background-color: #1e1e1e; /* Gris oscuro */
+  border: 1px solid #333;
+  border-left: 5px solid var(--neon-pink, #ff00cc); /* Borde rosa neón */
   border-radius: 8px;
-  cursor: pointer;
-  font-weight: bold;
-  transition: transform 0.2s, box-shadow 0.2s;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-
-.user-btn-add:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 4px 8px rgba(33, 150, 243, 0.4);
-}
-
-/* Grid de Cards */
-.user-cards-grid {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 25px;
-  width: 100%;
-}
-
-/* CARD ESPECÍFICA DE USUARIO (La colorida) */
-.user-card {
-  background: linear-gradient(135deg, #2f9bda, #c2459c) !important;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+  transition: transform 0.3s, box-shadow 0.3s;
   color: white;
-  border-radius: 15px;
-  padding: 1.5rem;
-  width: 260px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  box-shadow: 0 10px 20px rgba(0,0,0,0.15);
-  transition: transform 0.3s ease;
   position: relative;
-  overflow: hidden;
 }
 
-.user-card:hover {
-  transform: translateY(-8px) scale(1.02);
+.pet-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 0 20px rgba(255, 0, 204, 0.2); /* Resplandor rosa */
+  border-color: #555;
 }
 
-.user-card h3 {
-  margin-top: 0;
-  border-bottom: 1px solid rgba(255,255,255,0.3);
-  padding-bottom: 0.5rem;
+.pet-name {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--neon-blue, #00d4ff);
+  text-transform: uppercase;
 }
 
-.user-card p {
-  margin: 0.5rem 0;
-  font-size: 0.95rem;
+.pet-info {
+  line-height: 1.6;
 }
 
-/* Botones dentro de la card */
-.user-card-actions {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 1.5rem;
-  gap: 10px;
+.pet-info strong {
+  color: #ccc;
 }
 
-.user-btn-edit {
-  background-color: rgba(255, 255, 255, 0.2);
-  color: white;
-  border: 1px solid white;
-  padding: 0.4rem 0.8rem;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background 0.2s;
-}
+/* ==============================================
+   BOTONES
+   ============================================== */
 
-.user-btn-edit:hover {
-  background-color: rgba(255, 255, 255, 0.4);
-}
-
-.user-btn-delete {
-  background-color: #ff4d4d;
-  color: white;
-  border: none;
-  padding: 0.4rem 0.8rem;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.user-btn-delete:hover {
-  background-color: #cc0000;
-}
-
-/* Turnos */
-.user-turnos-section {
-  margin-top: 3rem;
-  width: 100%;
-  background-color: #f9f9f9;
-  padding: 2rem;
-  border-radius: 12px;
-}
-
-
-
-
-.user-btn-edit, 
-.user-btn-delete {
-  background-color: rgba(255, 255, 255, 0.2);
-  color: white;
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  padding: 4px 8px;  /* <--- Menos relleno */
-  font-size: 0.8rem; /* <--- Letra más chica */
+/* Botones pequeños de acción (Editar/Borrar) */
+.action-btn {
+  background: transparent;
+  border: 1px solid #555;
+  color: #aaa;
   border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.2s;
+  padding: 5px 10px;
+  margin-right: 8px;
+  transition: 0.3s;
 }
 
-.user-btn-edit:hover {
-  background-color: rgba(255, 255, 255, 0.4);
+.action-btn:hover {
+  border-color: white;
+  color: white;
+  background: rgba(255,255,255,0.1);
+}
+
+.text-danger:hover {
+  border-color: #ff4444;
+  color: #ff4444;
+  background: rgba(255, 68, 68, 0.1);
+}
+
+/* Botón Reservar (Píldora Azul) */
+.btn-reservar-rock {
+  background-color: var(--neon-blue, #00d4ff);
+  color: black;
+  font-weight: 800;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 30px;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
+  transition: 0.3s;
+}
+
+.btn-reservar-rock:hover {
+  background-color: white;
+  box-shadow: 0 0 20px var(--neon-blue, #00d4ff);
   transform: scale(1.05);
 }
 
-.user-btn-delete:hover {
-  background-color: #ff4d4d;
-  border-color: #ff4d4d;
+/* Botón Agregar Mascota (Contorno Neón) */
+.btn-add-neon {
+  background: transparent;
+  border: 2px solid var(--neon-blue, #00d4ff);
+  color: var(--neon-blue, #00d4ff);
+  font-weight: 800;
+  padding: 10px 20px;
+  text-transform: uppercase;
+  border-radius: 5px;
+  transition: 0.3s;
 }
 
-/* Ajuste para el botón Reservar (Compacto pero visible) */
-.user-btn-reservar {
-  background-color: #fff;
-  color: #2f9bda;
-  border: none;
-  border-radius: 20px; /* <--- Más redondeado */
-  padding: 5px 12px;   /* <--- Tamaño controlado */
-  font-size: 0.85rem;
-  font-weight: bold;
-  cursor: pointer;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-  transition: transform 0.2s;
+.btn-add-neon:hover {
+  background: var(--neon-blue, #00d4ff);
+  color: black;
+  box-shadow: 0 0 20px var(--neon-blue, #00d4ff);
+}
+
+/* ==============================================
+   TARJETAS DE TURNOS
+   ============================================== */
+.turno-card-dark {
+  background-color: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  color: white;
+  overflow: hidden;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.turno-header {
+  background-color: #252525;
+  padding: 10px 15px;
+  border-bottom: 1px solid #333;
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 5px;
 }
 
-.user-btn-reservar:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+.turno-date {
+  color: var(--neon-gold, #ffd700);
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.turno-body {
+  padding: 15px;
+}
+
+/* ==============================================
+   MODAL Y FORMULARIOS (ARREGLO DE LEGIBILIDAD)
+   ============================================== */
+
+/* 1. Fondo del Modal OSCURO (para que no salga blanco) */
+.modal-content {
+  background-color: #1e1e1e !important;
+  border: 1px solid var(--neon-blue, #00d4ff) !important;
+  color: white !important;
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.8) !important;
+}
+
+/* 2. Líneas de separación oscuras */
+.modal-header, .modal-footer {
+  border-color: #333 !important;
+}
+
+/* 3. El botón de cerrar (X) en blanco */
+.btn-close {
+  filter: invert(1) grayscale(100%) brightness(200%);
+}
+
+/* 4. Títulos del modal */
+.modal-title {
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--neon-blue, #00d4ff);
+}
+
+/* 5. Etiquetas de los inputs */
+.form-label {
+  color: #ccc;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+/* 6. INPUTS: Fondo oscuro y texto CLARO */
+.form-control {
+  background-color: #2c2c2c !important;
+  border: 1px solid #555 !important;
+  color: white !important;
+  padding: 10px;
+}
+
+/* 7. TEXTO DE AYUDA (PLACEHOLDER): GRIS CLARO PARA QUE SE LEA */
+.form-control::placeholder {
+  color: #aaaaaa !important;
+  opacity: 1;
+}
+
+/* 8. Input al hacer click (Focus) */
+.form-control:focus {
+  background-color: #333 !important;
+  border-color: var(--neon-blue, #00d4ff) !important;
+  box-shadow: 0 0 8px rgba(0, 212, 255, 0.4) !important;
+  color: white !important;
 }

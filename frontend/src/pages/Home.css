@@ -1,0 +1,126 @@
+/* src/pages/Home.css */
+
+.home-container {
+    background-color: var(--bg-dark);
+    overflow-x: hidden;
+}
+
+/* CAJA CENTRAL */
+.main-stage-box {
+    position: relative;
+    z-index: 10;
+}
+
+/* TÍTULO NEÓN */
+.title-neon {
+    font-weight: 900;
+    color: var(--neon-blue);
+    text-shadow: 0 0 10px rgba(0, 212, 255, 0.6);
+}
+
+.text-stroke {
+    color: transparent;
+    -webkit-text-stroke: 2px white;
+}
+
+/* IMAGEN PRINCIPAL */
+.main-dog-img {
+    max-height: 400px;
+    filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));
+    transition: transform 0.3s;
+}
+
+.main-dog-img:hover {
+    transform: scale(1.05) rotate(2deg);
+}
+
+/* BOTÓN GRANDE */
+.btn-cta {
+    background: var(--neon-pink);
+    color: white;
+    font-size: 1.5rem;
+    font-weight: 800;
+    padding: 15px 40px;
+    border: none;
+    border-radius: 50px; /* Redondo estilo ticket */
+    cursor: pointer;
+    box-shadow: 0 0 20px var(--neon-pink);
+    transition: all 0.3s;
+}
+
+.btn-cta:hover {
+    background: #d900ae;
+    transform: translateY(-5px);
+    box-shadow: 0 0 40px var(--neon-pink);
+}
+
+/* IMÁGENES LATERALES */
+.side-column {
+    height: 80vh;
+    justify-content: center;
+    opacity: 0.6; /* Un poco apagadas por defecto */
+    transition: opacity 0.3s;
+}
+
+.side-column:hover {
+    opacity: 1; /* Se encienden al pasar el mouse */
+}
+
+.img-frame {
+    border: 2px solid #333;
+    padding: 5px;
+    background: #1e1e1e;
+    transform: rotate(-3deg);
+    transition: transform 0.3s;
+}
+
+.img-frame:nth-child(even) {
+    transform: rotate(3deg);
+}
+
+.img-frame:hover {
+    transform: rotate(0deg) scale(1.1);
+    border-color: var(--neon-blue);
+    z-index: 5;
+}
+
+.side-img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    filter: grayscale(100%); /* Blanco y negro */
+    transition: filter 0.3s;
+}
+
+.img-frame:hover .side-img {
+    filter: grayscale(0%); /* Color al hover */
+}
+
+/* CARDS DE SERVICIOS */
+.service-card {
+    background: var(--bg-card);
+    padding: 2rem;
+    border-radius: 10px;
+    border-top: 4px solid #333;
+    transition: all 0.3s;
+}
+
+.service-card:hover {
+    background: #252525;
+    border-top-color: var(--neon-blue);
+    transform: translateY(-10px);
+}
+
+.service-card .icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.service-card h4 {
+    color: white;
+    font-weight: 700;
+}
+
+.service-card p {
+    color: var(--text-muted);
+}

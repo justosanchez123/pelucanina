@@ -1,254 +1,256 @@
-// src/pages/HomeUsuario.jsx
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom"; // Importamos useNavigate
+import { useNavigate } from "react-router-dom";
 import api from "../api/axios";
 import { useAuth } from "../context/AuthContext";
-import Modal from "./Modal";
+// ✅ Importamos componentes de Bootstrap y SweetAlert
+import { Modal, Button, Form } from "react-bootstrap"; 
+import Swal from 'sweetalert2';
 import './HomeUsuario.css';
 
 const HomeUsuario = () => {
   const { usuario } = useAuth();
   const navigate = useNavigate();
   const [mascotas, setMascotas] = useState([]);
-  const [turnos, setTurnos] = useState([]); // <--- Aquí se guardan
+  const [turnos, setTurnos] = useState([]);
 
-  // Estados para Modal y Formulario Mascota
+  // Estados del Modal de Bootstrap
   const [showModal, setShowModal] = useState(false);
   const [editando, setEditando] = useState(false);
-  const [mascotaEdit, setMascotaEdit] = useState(null);
+  const [mascotaEditId, setMascotaEditId] = useState(null);
 
   const [formData, setFormData] = useState({
-    nombre: "",
-    edad: "",
-    raza: "",
-    peso: "",
-    enfermedades: "",
-    observaciones: "",
+    nombre: "", edad: "", raza: "", peso: "", enfermedades: "", observaciones: "",
   });
 
-  // Estado visual de turnos (solo lectura por ahora)
-  //const [turnos, setTurnos] = useState([]);
-
-
-  // Función para cargar MASCOTAS
-  const cargarMascotas = async () => {
+  // Cargar datos al iniciar
+  const cargarDatos = async () => {
     if (!usuario?._id) return;
     try {
-      const res = await api.get("/mascotas");
-      const data = Array.isArray(res.data) ? res.data : res.data.mascotas || [];
-      setMascotas(data);
+      const [resMascotas, resTurnos] = await Promise.all([
+        api.get("/mascotas"),
+        api.get(`/turnos/dueno/${usuario._id}`)
+      ]);
+      
+      const listaMascotas = Array.isArray(resMascotas.data) ? resMascotas.data : resMascotas.data.mascotas || [];
+      setMascotas(listaMascotas);
+      setTurnos(resTurnos.data);
     } catch (error) {
-      console.error("❌ Error al cargar mascotas:", error);
-    }
-  };
-
-  // NUEVA FUNCIÓN: Cargar TURNOS 📅
-  const cargarTurnos = async () => {
-    if (!usuario?._id) return;
-    try {
-      // Llamamos al endpoint que te mostré del backend
-      const res = await api.get(`/turnos/dueno/${usuario._id}`);
-      setTurnos(res.data);
-    } catch (error) {
-      console.error("❌ Error al cargar turnos:", error);
+      console.error("❌ Error cargando datos:", error);
     }
   };
 
   useEffect(() => {
-    if (usuario) {
-      cargarMascotas();
-      cargarTurnos(); // <--- ¡Ahora sí los llamamos!
-    }
+    if (usuario) cargarDatos();
   }, [usuario]);
 
-  const abrirModal = (mascota = null) => {
+  // Manejo del Modal (Abrir para Crear o Editar)
+  const handleAbrirModal = (mascota = null) => {
     if (mascota) {
       setEditando(true);
-      setFormData({ ...mascota });
-      setMascotaEdit(mascota);
+      setMascotaEditId(mascota._id);
+      setFormData({ 
+        nombre: mascota.nombre, edad: mascota.edad, raza: mascota.raza,
+        peso: mascota.peso || "", enfermedades: mascota.enfermedades || "", observaciones: mascota.observaciones || ""
+      });
     } else {
       setEditando(false);
-      setFormData({
-        nombre: "", edad: "", raza: "", peso: "", enfermedades: "", observaciones: "",
-      });
-      setMascotaEdit(null);
+      setMascotaEditId(null);
+      setFormData({ nombre: "", edad: "", raza: "", peso: "", enfermedades: "", observaciones: "" });
     }
     setShowModal(true);
   };
 
-  const cerrarModal = () => setShowModal(false);
-
-  // src/pages/HomeUsuario.jsx
-
+  // Guardar Mascota
   const handleGuardar = async () => {
     try {
-      // AGREGAMOS 'tipoDueno' AL PAYLOAD
-      // Asumimos que el modelo en tu backend se llama "Usuario"
-      const payload = {
-        ...formData,
-        dueno: usuario._id,
-        tipoDueno: "Usuario" // <--- ¡ESTA ES LA CLAVE QUE FALTABA! 🔑
-      };
+      const payload = { ...formData, dueno: usuario._id, tipoDueno: "Usuario" };
 
-      console.log("📤 Enviando mascota:", payload);
-
-      if (editando && mascotaEdit?._id) {
-        await api.put(`/mascotas/${mascotaEdit._id}`, payload);
+      if (editando) {
+        await api.put(`/mascotas/${mascotaEditId}`, payload);
+        Swal.fire({
+            title: '¡Actualizado!', 
+            text: 'Datos de la mascota actualizados.', 
+            icon: 'success', 
+            background: '#1e1e1e', 
+            color: '#fff',
+            confirmButtonColor: '#00d4ff'
+        });
       } else {
         await api.post("/mascotas", payload);
+        Swal.fire({
+            title: '¡Bienvenido!', 
+            text: 'Nueva mascota agregada a la banda.', 
+            icon: 'success', 
+            background: '#1e1e1e', 
+            color: '#fff',
+            confirmButtonColor: '#00d4ff'
+        });
       }
 
-      await cargarMascotas();
-      cerrarModal();
+      await cargarDatos();
+      setShowModal(false);
     } catch (error) {
-      console.error("❌ Error al guardar mascota:", error.response?.data || error);
-      // Mejoramos el alert para que veas el error si vuelve a pasar
-      alert(`Error: ${error.response?.data?.message || "No se pudo guardar"}`);
+      Swal.fire({
+        title: 'Error',
+        text: 'No se pudo guardar.',
+        icon: 'error',
+        background: '#1e1e1e', 
+        color: '#fff'
+      });
     }
   };
 
+  // Eliminar Mascota
   const handleEliminar = async (id) => {
-    if (!window.confirm("¿Deseas eliminar esta mascota?")) return;
-    try {
-      await api.delete(`/mascotas/${id}`);
-      await cargarMascotas();
-    } catch (error) {
-      console.error("❌ Error:", error);
-      alert("No se pudo eliminar");
-    }
-  };
+    const result = await Swal.fire({
+      title: '¿Estás seguro?',
+      text: "Se eliminará la mascota y sus turnos pendientes.",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Sí, eliminar',
+      background: '#1e1e1e',
+      color: '#fff'
+    });
 
-  // Función para ir a reservar turno para una mascota específica
-  const irAReservar = (mascota) => {
-    // Navegamos a la pagina de agendar y le pasamos la mascota como "state"
-    // para que el formulario ya sepa a quién vamos a bañar
-    navigate('/agendar', { state: { mascotaSeleccionada: mascota } });
+    if (result.isConfirmed) {
+      try {
+        await api.delete(`/mascotas/${id}`);
+        await cargarDatos();
+        Swal.fire({
+            title: 'Eliminado', 
+            icon: 'success', 
+            background: '#1e1e1e', 
+            color: '#fff'
+        });
+      } catch (error) {
+        Swal.fire({title: 'Error', text: 'No se pudo eliminar.', icon: 'error', background: '#1e1e1e', color: '#fff'});
+      }
+    }
   };
 
   return (
+    // ⚠️ CAMBIO AQUÍ: Quitamos la clase 'container' para evitar conflictos de fondo blanco
     <div className="user-container">
-
-      {/* HEADER */}
-      <div className="user-header">
-        <h2>🏠 Panel de {usuario?.nombres || 'Usuario'}</h2>
+      
+      {/* HEADER DEL PANEL */}
+      <div className="d-flex justify-content-between align-items-center mb-5 border-bottom border-secondary pb-3">
+        <div>
+            <h6 className="text-secondary text-uppercase mb-1" style={{letterSpacing: '2px'}}>Panel de Control</h6>
+            <h1 className="title-rock display-5">Hola, {usuario?.nombres}</h1>
+        </div>
       </div>
 
-      {/* SECCIÓN MIS MASCOTAS */}
-      <div className="user-mascotas-section">
-        <h3 className="user-title-mascotas">🐶 Mis Mascotas</h3>
-        <button className="user-btn-add" onClick={() => abrirModal()}>
+      {/* SECCIÓN MASCOTAS */}
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <h3 className="subtitle-rock">🐶 Mis Mascotas</h3>
+        <button className="btn btn-add-neon" onClick={() => handleAbrirModal()}>
           + Agregar Mascota
         </button>
       </div>
 
-      {/* CARDS */}
-      <div className="user-cards-grid">
+      <div className="row mb-5">
         {mascotas.length === 0 ? (
-          <p>No tienes mascotas registradas. ¡Agrega una para comenzar!</p>
+          <div className="col-12 text-center py-5 text-muted border border-secondary rounded" style={{background: 'rgba(255,255,255,0.05)'}}>
+            <h4 className="opacity-50">No hay mascotas registradas</h4>
+            <p>¡Agrega a tu primera estrella para comenzar!</p>
+          </div>
         ) : (
           mascotas.map((m) => (
+            <div key={m._id} className="col-md-6 col-lg-4">
+                <div className="pet-card">
+                    <div className="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <div className="pet-name">{m.nombre}</div>
+                            <small className="text-white-50 text-uppercase">{m.raza}</small>
+                        </div>
+                        <span className="fs-3">🐾</span>
+                    </div>
+                    
+                    <div className="pet-info mb-4 small">
+                        <div><strong>Edad:</strong> {m.edad} años</div>
+                        <div><strong>Peso:</strong> {m.peso} kg</div>
+                        <div className="text-truncate"><strong>Salud:</strong> {m.enfermedades || 'Sana'}</div>
+                    </div>
 
-
-            <div key={m._id} className="user-card">
-              {/* Título con icono */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.3)', paddingBottom: '5px', marginBottom: '10px' }}>
-                <h3 style={{ margin: 0, fontSize: '1.2rem' }}>{m.nombre}</h3>
-                <span style={{ fontSize: '1.2rem' }}>🐾</span>
-              </div>
-
-              {/* Cuerpo de la tarjeta: Agregamos Peso y Enfermedades */}
-              <div style={{ fontSize: '0.9rem', flexGrow: 1 }}>
-                <p style={{ margin: '5px 0' }}><strong>Raza:</strong> {m.raza}</p>
-                <p style={{ margin: '5px 0' }}><strong>Edad:</strong> {m.edad}</p>
-                {/* AQUI AGREGAMOS LOS NUEVOS CAMPOS */}
-                <p style={{ margin: '5px 0' }}><strong>Peso:</strong> {m.peso ? `${m.peso} kg` : '-'}</p>
-                <p style={{ margin: '5px 0' }}><strong>Salud:</strong> {m.enfermedades || 'Sana'}</p>
-
-                {m.observaciones && (
-                  <p style={{ margin: '5px 0', fontStyle: 'italic', opacity: 0.9 }}>"{m.observaciones}"</p>
-                )}
-              </div>
-
-              {/* Botones de Acción (Ahora usarán el CSS nuevo más chico) */}
-              <div className="user-card-actions" style={{ marginTop: '15px', alignItems: 'center' }}>
-                <div style={{ display: 'flex', gap: '5px' }}>
-                  <button className="user-btn-edit" onClick={() => abrirModal(m)} title="Editar">✏️</button>
-                  <button className="user-btn-delete" onClick={() => handleEliminar(m._id)} title="Eliminar">🗑️</button>
+                    <div className="d-flex justify-content-between align-items-center">
+                        <div>
+                            <button className="action-btn" onClick={() => handleAbrirModal(m)} title="Editar">✏️</button>
+                            <button className="action-btn text-danger" onClick={() => handleEliminar(m._id)} title="Eliminar">🗑️</button>
+                        </div>
+                        <button 
+                            className="btn-reservar-rock"
+                            onClick={() => navigate('/agendar', { state: { mascotaSeleccionada: m } })}
+                        >
+                        📅 Turno
+                        </button>
+                    </div>
                 </div>
-
-                <button
-                  className="user-btn-reservar"
-                  onClick={() => irAReservar(m)}
-                >
-                  📅 Reservar
-                </button>
-              </div>
             </div>
           ))
         )}
       </div>
 
-      {/* TURNOS */}
-      <div className="user-turnos-section">
-        <h3 style={{ borderBottom: '2px solid #eee', paddingBottom: '10px', marginBottom: '15px' }}>📅 Mis Turnos Agendados</h3>
-
+      {/* SECCIÓN TURNOS */}
+      <h3 className="subtitle-rock mb-4">📅 Turnos Agendados</h3>
+      <div className="row">
         {turnos.length === 0 ? (
-          <p style={{ color: '#888', fontStyle: 'italic' }}>No tienes turnos pendientes.</p>
+           <p className="text-muted fst-italic">No tienes turnos próximos.</p>
         ) : (
-          <ul style={{ listStyle: 'none', padding: 0 }}>
-            {turnos.map((t) => (
-              <li key={t._id} style={{
-                backgroundColor: 'white',
-                border: '1px solid #e0e0e0',
-                borderRadius: '8px',
-                padding: '15px',
-                marginBottom: '10px',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
-              }}>
-                <div>
-                  {/* Formateamos la fecha para que se vea linda */}
-                  <div style={{ fontWeight: 'bold', color: '#2f9bda', fontSize: '1.1rem' }}>
-                    {new Date(t.fecha).toLocaleDateString()} — {t.hora}:00 hs
-                  </div>
-                  <div style={{ color: '#555' }}>
-                    Mascota: <strong>{t.mascota?.nombre || 'Mascota eliminada'}</strong>
-                  </div>
-                </div>
-
-                {/* Botón Cancelar (Opcional, si quieres implementarlo luego) */}
-                <button
-                  style={{ color: 'red', background: 'none', border: '1px solid red', borderRadius: '5px', padding: '5px 10px', cursor: 'pointer' }}
-                  onClick={() => alert("Funcionalidad de cancelar pendiente de conectar")}
-                >
-                  Cancelar
-                </button>
-              </li>
-            ))}
-          </ul>
+           turnos.map((t) => (
+             <div key={t._id} className="col-md-12">
+               <div className="turno-card-dark">
+                 <div className="turno-header">
+                   <div className="turno-date">
+                     {new Date(t.fecha).toLocaleDateString()} <span className="text-white mx-2">|</span> {t.hora}:00 hs
+                   </div>
+                   <span className={`badge ${t.estado === 'cancelado' ? 'bg-danger' : 'bg-success'}`}>
+                      {t.estado ? t.estado.toUpperCase() : 'ACTIVO'}
+                   </span>
+                 </div>
+                 <div className="turno-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <div className="mb-1">
+                            Paciente: <strong style={{color: 'var(--neon-blue)'}}>{t.mascota?.nombre || 'Desconocido'}</strong>
+                        </div>
+                        <div className="small text-muted">
+                            Servicio de Peluquería
+                        </div>
+                    </div>
+                 </div>
+               </div>
+             </div>
+           ))
         )}
       </div>
 
-      {/* MODAL SOLO MASCOTAS */}
-      <Modal
-        isOpen={showModal}
-        title={editando ? "Editar Mascota" : "Nueva Mascota"}
-        onClose={cerrarModal}
-        onSave={handleGuardar}
-      >
-        {["nombre", "edad", "raza", "peso", "enfermedades", "observaciones"].map((campo) => (
-          <div key={campo} style={{ marginBottom: '10px' }}>
-            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 'bold', textTransform: 'capitalize' }}>{campo}</label>
-            <input
-              placeholder={`Ingresa ${campo}`}
-              value={formData[campo] || ""}
-              onChange={(e) => setFormData({ ...formData, [campo]: e.target.value })}
-              style={{ width: "100%", padding: "8px", borderRadius: "5px", border: "1px solid #ccc" }}
-            />
-          </div>
-        ))}
+      {/* MODAL (Estilizado por el CSS rockero) */}
+      <Modal show={showModal} onHide={() => setShowModal(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title className="text-white">{editando ? "✏️ Editar Ficha" : "🐾 Nueva Mascota"}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form>
+            {["nombre", "edad", "raza", "peso", "enfermedades", "observaciones"].map((campo) => (
+              <Form.Group key={campo} className="mb-3">
+                <Form.Label className="text-capitalize text-info">{campo}</Form.Label>
+                <Form.Control
+                  type={campo === 'edad' || campo === 'peso' ? 'number' : 'text'}
+                  value={formData[campo]}
+                  onChange={(e) => setFormData({ ...formData, [campo]: e.target.value })}
+                  placeholder={`Ingrese ${campo}`}
+                />
+              </Form.Group>
+            ))}
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowModal(false)}>Cancelar</Button>
+          <Button style={{backgroundColor: '#00d4ff', color:'black', border:'none', fontWeight:'bold'}} onClick={handleGuardar}>
+            Guardar
+          </Button>
+        </Modal.Footer>
       </Modal>
     </div>
   );
