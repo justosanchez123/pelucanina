@@ -1,46 +1,45 @@
-// src/components/Nav/Nav.jsx
 import React from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import "./Nav.css";
-
-// --- NUEVA LÍNEA: Importamos la imagen ---
-// NOTA: Los "../.." son para subir dos niveles desde la carpeta Nav hasta llegar a src
-import logoImg from '../../assets/dog.png'; 
+import "./Nav.css"; 
 
 const Nav = () => {
   const { usuario, logout } = useAuth();
 
   return (
     <nav className="nav-container">
-      {/* === PARTE IZQUIERDA: EL LOGO === */}
+      {/* IZQUIERDA: LOGO */}
       <div className="nav-left">
         <Link to="/" className="nav-logo">
-          {/* --- CAMBIO AQUÍ: Reemplazamos el emoji 🐾 por la etiqueta <img> --- */}
-          <img src={logoImg} alt="Logo Dog & Roll" className="nav-logo-img" />
-          
-          <span className="nav-logo-text">Dog & Roll-Peluquería Canina</span>
+          {/* Asegúrate de que logo-rock.png esté en la carpeta public */}
+          <img src="/logo-rock.png" alt="Dog & Roll" className="nav-logo-img" />
+          <span className="nav-logo-text d-none d-md-block">Dog & Roll</span>
         </Link>
       </div>
 
-      {/* === PARTE DERECHA: LOS BOTONES (Esto sigue igual) === */}
+      {/* DERECHA: BOTONES */}
       <div className="nav-right">
         {!usuario && (
-          <Link to="/login" className="nav-btn login-btn">Login</Link>
+          <Link to="/login" className="nav-btn login-btn">
+            🎸 INICIAR SESIÓN
+          </Link>
         )}
+        
         {usuario && (
           <>
-            <span className="nav-saludo">
-              Hola, {usuario.nombres || 'Usuario'} 👋
+            <span className="nav-saludo d-none d-sm-block">
+              Hola, <span style={{color: 'var(--neon-gold)'}}>{usuario.nombres}</span>
             </span>
+            
             <Link 
-              to={usuario.rol?.startsWith('admin') ? '/admin' : '/usuario'} 
+              to={usuario.rol.includes('admin') ? '/admin' : '/usuario'} 
               className="nav-btn panel-btn"
             >
-              Mi Panel
+              MI CAMERINO (PANEL)
             </Link>
+            
             <button className="nav-btn logout-btn" onClick={logout}>
-              Salir
+              SALIR
             </button>
           </>
         )}

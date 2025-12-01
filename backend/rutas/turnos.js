@@ -1,188 +1,127 @@
+// rutas/turnos.js
 const express = require('express');
 const router = express.Router();
 const Turno = require('../modelos/turno');
-const Dueno = require('../modelos/dueno');
-const Mascota = require('../modelos/mascota');
-const Usuario = require('../modelos/usuario'); 
 const autenticarToken = require('../middlewares/autorizaciones');
 
-// 🟨 Feriados fijos (formato DD-MM-YYYY)
-const diasFeriados = [
-  '01-01-2025',
-  '24-03-2025',
-  '02-04-2025',
-  '01-05-2025',
-  '09-07-2025',
-  '25-12-2025'
-];
-
-// 👉 Obtener lista de feriados
-router.get('/feriados', autenticarToken, (req, res) => {
-  res.json({ feriados: diasFeriados });
-});
-
-// 🟩 Obtener todos los turnos con dueño y mascota
-router.get('/', autenticarToken, async (req, res) => {
+// 🟢 1. Obtener horarios disponibles para una fecha (Front lo llama al cambiar el calendario)
+router.get('/disponibles', autenticarToken, async (req, res) => {
   try {
-    const turnos = await Turno.find()
-      .populate('dueno', 'nombre apellidos telefono email')
-      .populate('mascota', 'nombre raza');
-    res.json(turnos);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ mensaje: 'Error interno al obtener turnos' });
+    const { fecha } = req.query; // Esperamos formato DD-MM-YYYY
+    if (!fecha) return res.status(400).json({ mensaje: 'Fecha requerida' });
+
+    // Convertir DD-MM-YYYY a objeto Date
+    const [dd, mm, yyyy] = fecha.split('-');
+    
+    // ESTRATEGIA MEDIODÍA: Creamos la fecha a las 12:00 PM UTC
+    const fechaBusqueda = new Date(Date.UTC(yyyy, mm - 1, dd, 12, 0, 0));
+
+    // Buscamos todos los turnos ocupados ese día exacto
+    const turnosOcupados = await Turno.find({ fecha: fechaBusqueda });
+
+    // Lista de horarios que trabaja la peluquería
+    const todosHorarios = ['08', '09', '10', '11', '12', '13', '14', '15', '16', '17'];
+    
+    // Extraemos las horas que ya tienen turno
+    const horasOcupadas = turnosOcupados.map(t => t.hora);
+
+    // Filtramos: Dejamos solo los que NO están ocupados
+    const disponibles = todosHorarios.filter(h => !horasOcupadas.includes(h));
+
+    res.json(disponibles);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ mensaje: 'Error al buscar horarios' });
   }
 });
 
-// 👉 Crear nuevo turno o bloquear horario (MODIFICADO)
+// 🟢 2. Crear Turno (Reservar)
 router.post('/', autenticarToken, async (req, res) => {
   try {
-    // 1. Obtenemos datos del body y del usuario autenticado
-    let { fecha, hora, mascota, dueno, bloqueado, nombreCliente } = req.body;
+    let { fecha, hora, mascota, dueno, bloqueado } = req.body;
     const { rol, id: usuarioId } = req.usuario;
 
-    // 2. Validación de campos básicos
-    if (!fecha || !hora) {
-      return res.status(400).json({ mensaje: 'Faltan datos obligatorios (fecha y hora)' });
-    }
+    // Validación básica
+    if (!fecha || !hora) return res.status(400).json({ mensaje: 'Fecha y hora obligatorias' });
 
-    // ==================================================================
-    // 🔒 BLINDAJE DE ROLES (Seguridad Backend)
-    // ==================================================================
+    // Si es usuario normal, forzamos que el dueño sea él mismo
     if (rol === 'usuario') {
-      // Si es Usuario: LE IMPONEMOS SUS DATOS
-      dueno = usuarioId;      // El dueño es EL MISMO, no puede asignar a otro
-      bloqueado = false;      // No puede bloquear horarios
-      nombreCliente = null;   // No puede poner nombres a mano
-      
-      // El usuario OBLIGATORIAMENTE debe mandar mascota
-      if (!mascota) {
-        return res.status(400).json({ mensaje: 'Debes seleccionar una mascota' });
-      }
-    } 
-    
-    // Si es Admin: Permitimos que 'dueno', 'mascota' y 'bloqueado' vengan del body
-    // Pero validamos que al menos haya mascota O bloqueo
-    if (rol !== 'usuario' && !mascota && !bloqueado) {
-       return res.status(400).json({ mensaje: 'Debes indicar una mascota o bloquear el turno' });
+      dueno = usuarioId;
+      bloqueado = false;
     }
 
-    // ==================================================================
-    // 🛡️ CORRECCIÓN DE FECHA (Estrategia del Mediodía)
-    // ==================================================================
-    // Convertimos la fecha recibida y la forzamos a las 12:00 PM UTC
-    // Esto evita el error de "un día antes" por la diferencia horaria
-    const fechaProcesada = new Date(fecha);
-    fechaProcesada.setUTCHours(12, 0, 0, 0);
+    // PROCESAMIENTO DE FECHA (Igual que arriba)
+    // fecha viene YYYY-MM-DD del input type="date"
+    const fechaObj = new Date(fecha); 
+    // Forzamos a UTC 12:00 para que coincida con la búsqueda
+    const fechaGuardar = new Date(Date.UTC(fechaObj.getUTCFullYear(), fechaObj.getUTCMonth(), fechaObj.getUTCDate(), 12, 0, 0));
 
-    // ==================================================================
-    // 🛑 VALIDACIÓN DE DISPONIBILIDAD
-    // ==================================================================
-    // Definimos el rango del día usando la fecha ya corregida
-    const inicioDia = new Date(fechaProcesada); inicioDia.setHours(0,0,0,0);
-    const finDia = new Date(fechaProcesada); finDia.setHours(23,59,59,999);
-
-    const turnoExistente = await Turno.findOne({
-      fecha: { $gte: inicioDia, $lte: finDia }, 
-      hora: hora 
-    });
-
-    if (turnoExistente) {
-      return res.status(409).json({ mensaje: '⚠️ Ese turno ya fue reservado.' });
+    // VALIDACIÓN DE DISPONIBILIDAD (Doble chequeo)
+    const ocupado = await Turno.findOne({ fecha: fechaGuardar, hora: hora });
+    if (ocupado) {
+      return res.status(409).json({ mensaje: '¡Lo sentimos! Ese horario ya fue reservado.' });
     }
 
-    // ✅ CREAR TURNO
+    // Guardar
     const nuevoTurno = new Turno({
-      fecha: fechaProcesada, // Usamos la fecha corregida
+      fecha: fechaGuardar,
       hora,
       mascota: bloqueado ? null : mascota,
-      dueno: dueno, // Usamos el dueño seguro
-      bloqueado: bloqueado || false,
-      nombreCliente: nombreCliente || null
+      dueno,
+      bloqueado: bloqueado || false
     });
 
     await nuevoTurno.save();
     res.status(201).json(nuevoTurno);
 
-  } catch (err) {
-    console.error('Error creando turno:', err);
-    res.status(500).json({ mensaje: 'Error interno al crear turno' });
-  }
-});
-
-
-// 🟩 Actualizar turno
-router.put('/:id', autenticarToken, async (req, res) => {
-  try {
-    const actualizado = await Turno.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    if (!actualizado) return res.status(404).json({ mensaje: 'Turno no encontrado' });
-    res.json(actualizado);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ mensaje: 'Error interno al actualizar turno' });
-  }
-});
-
-// 🟩 Eliminar turno
-router.delete('/:id', autenticarToken, async (req, res) => {
-  try {
-    const eliminado = await Turno.findByIdAndDelete(req.params.id);
-    if (!eliminado) return res.status(404).json({ mensaje: 'Turno no encontrado' });
-    res.json({ mensaje: 'Turno eliminado' });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ mensaje: 'Error interno al eliminar turno' });
-  }
-});
-
-// 👉 Horarios disponibles
-router.get('/disponibles', autenticarToken, async (req, res) => {
-  try {
-    const { fecha } = req.query;
-    if (!fecha) return res.status(400).json({ mensaje: 'Fecha requerida (DD-MM-YYYY)' });
-
-    const regex = /^\d{2}-\d{2}-\d{4}$/;
-    if (!regex.test(fecha)) {
-      return res.status(400).json({ mensaje: 'Formato inválido. Usá DD-MM-YYYY' });
+  } catch (error) {
+    console.error(error);
+    // Si falla el índice unique de Mongo (por si dos clickearon al mismo milisegundo)
+    if (error.code === 11000) {
+        return res.status(409).json({ mensaje: 'Ese horario ya está ocupado.' });
     }
-
-    const [dd, mm, yyyy] = fecha.split('-');
-    const inicio = new Date(yyyy, mm - 1, dd, 0, 0, 0);
-    const fin = new Date(yyyy, mm - 1, dd, 23, 59, 59);
-
-    const turnosDelDia = await Turno.find({
-      fecha: { $gte: inicio, $lte: fin }
-    });
-
-    const horariosTomados = turnosDelDia.map(t => t.hora);
-    const todosHoras = ['08','09','10','11','12','13','14','15','16','17'];
-    const disponibles = todosHoras.filter(h => !horariosTomados.includes(h));
-
-    return res.json(disponibles);
-  } catch (err) {
-    console.error('Error en disponibles:', err);
-    return res.status(500).json([]);
+    res.status(500).json({ mensaje: 'Error interno al reservar' });
   }
 });
 
-// Obtener turnos por dueño
+// 🟢 3. Obtener turnos de un dueño específico (Historial)
 router.get('/dueno/:id', autenticarToken, async (req, res) => {
   try {
-    const { rol, id: userId } = req.usuario;
-    const { id } = req.params;
+    const turnos = await Turno.find({ dueno: req.params.id })
+      .populate('mascota', 'nombre raza') // Traemos datos lindos de la mascota
+      .sort({ fecha: -1 }); // Ordenamos del más reciente al más viejo
+    res.json(turnos);
+  } catch (error) {
+    res.status(500).json({ mensaje: 'Error obteniendo historial' });
+  }
+});
 
-    if (rol === 'usuario' && userId.toString() !== id.toString()) {
-      return res.status(403).json({ mensaje: 'No puedes ver turnos de otro usuario' });
+// 🟢 4. Obtener TODOS los turnos (Para el Admin)
+router.get('/', autenticarToken, async (req, res) => {
+  try {
+    // Solo admins
+    if (!req.usuario.rol.includes('admin')) {
+        return res.status(403).json({ mensaje: 'Acceso denegado' });
     }
 
-    const turnos = await Turno.find({ dueno: id })
-      .populate('mascota', 'nombre raza')
-      .lean();
-
+    const turnos = await Turno.find()
+      .populate('dueno', 'nombres apellidos email telefono')
+      .populate('mascota', 'nombre')
+      .sort({ fecha: -1 });
+      
     res.json(turnos);
-  } catch (err) {
-    console.error('❌ Obtener turnos por dueño:', err);
-    res.status(500).json({ mensaje: 'Error interno al obtener turnos' });
+  } catch (error) {
+    res.status(500).json({ mensaje: 'Error cargando agenda' });
+  }
+});
+
+// 🟢 5. Eliminar/Cancelar Turno
+router.delete('/:id', autenticarToken, async (req, res) => {
+  try {
+    await Turno.findByIdAndDelete(req.params.id);
+    res.json({ mensaje: 'Turno eliminado' });
+  } catch (error) {
+    res.status(500).json({ mensaje: 'Error eliminando turno' });
   }
 });
 

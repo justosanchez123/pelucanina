@@ -1,25 +1,140 @@
+/* src/pages/Login.css */
+
 .login-page {
   position: relative;
   width: 100vw;
   height: 100vh;
-  background: linear-gradient(45deg, #f803cf, #1d6fbb); /* Degradado diagonal */
+  /* Fondo Rockero: Negro casi puro */
+  background-color: #121212;
+  /* Degradado muy sutil para dar profundidad */
+  background-image: linear-gradient(to top, #000000, #1a1a1a);
+  
   display: flex;
   justify-content: center;
   align-items: center;
-  overflow: hidden;
+  overflow: hidden; /* IMPORTANTE: Evita scrollbars si las patas salen de pantalla */
 }
 
+/* --- ESTILOS DE LA TARJETA DE LOGIN --- */
 .login-card {
   position: relative;
-  z-index: 10;
-  background: white;
-  padding: 2rem;
-  border-radius: 15px;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+  z-index: 10; /* Encima de las patas */
+  background: rgba(30, 30, 30, 0.95); /* Fondo oscuro semitransparente */
+  padding: 2.5rem;
+  border-radius: 12px;
+  border: 1px solid #333;
+  
+  /* Sombra de neón azul suave */
+  box-shadow: 0 0 30px rgba(0, 212, 255, 0.15); 
+  
   width: 100%;
   max-width: 400px;
+  color: white;
+  text-align: center;
 }
 
+.login-card h2 {
+    color: #00d4ff; /* Azul Neón */
+    margin-bottom: 1.5rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
 
+.login-card input {
+    background-color: #2c2c2c;
+    border: 1px solid #444;
+    color: white;
+    width: 100%;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+}
 
+.login-card input:focus {
+    outline: none;
+    border-color: #00d4ff;
+    box-shadow: 0 0 5px rgba(0, 212, 255, 0.5);
+}
 
+.login-card button {
+    background-color: #00d4ff;
+    color: #000;
+    font-weight: 700;
+    border: none;
+    width: 100%;
+    padding: 10px;
+    border-radius: 5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.login-card button:hover {
+    background-color: white;
+    box-shadow: 0 0 15px #00d4ff;
+}
+
+.login-card a {
+    color: #ffd700; /* Dorado */
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.login-card a:hover {
+    text-decoration: underline;
+}
+
+/* --- ANIMACIÓN DE LAS PATITAS --- */
+
+.paw-icon {
+  position: absolute; /* CRÍTICO: Esto permite que floten libremente */
+  width: 60px; 
+  height: 60px;
+  
+  /* CAMBIO AQUÍ: Opacidad al 30% (0.3) */
+  opacity: 0.3; 
+  
+  /* Esto convierte tu imagen marrón en BLANCA */
+  filter: grayscale(100%) brightness(1000%); 
+  
+  pointer-events: none; /* Para que no interfieran con los clicks */
+  bottom: -100px; /* Empiezan fuera de la pantalla abajo */
+}
+
+/* Definimos la animación de flotar hacia arriba */
+@keyframes floatUp {
+  0% {
+    transform: translateY(0) rotate(0deg) scale(0.8);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.3; /* Aparecen al 30% */
+  }
+  90% {
+    opacity: 0.3; /* Se mantienen al 30% */
+  }
+  100% {
+    transform: translateY(-120vh) rotate(45deg) scale(1.2); /* Suben hasta salir por arriba */
+    opacity: 0;
+  }
+}
+
+.animate-walk {
+  animation: floatUp 15s linear infinite;
+}
+
+/* DISTRIBUCIÓN ALEATORIA */
+/* Esto hace que no se vean en fila india */
+.paw-icon:nth-child(1) { left: 5%; animation-duration: 12s; animation-delay: 0s; }
+.paw-icon:nth-child(2) { left: 15%; animation-duration: 15s; animation-delay: 2s; }
+.paw-icon:nth-child(3) { left: 25%; animation-duration: 10s; animation-delay: 4s; }
+.paw-icon:nth-child(4) { left: 35%; animation-duration: 18s; animation-delay: 1s; }
+.paw-icon:nth-child(5) { left: 45%; animation-duration: 14s; animation-delay: 6s; }
+.paw-icon:nth-child(6) { left: 55%; animation-duration: 11s; animation-delay: 3s; }
+.paw-icon:nth-child(7) { left: 65%; animation-duration: 16s; animation-delay: 8s; }
+.paw-icon:nth-child(8) { left: 75%; animation-duration: 13s; animation-delay: 5s; }
+.paw-icon:nth-child(9) { left: 85%; animation-duration: 17s; animation-delay: 9s; }
+.paw-icon:nth-child(10){ left: 95%; animation-duration: 19s; animation-delay: 7s; }
+.paw-icon:nth-child(11){ left: 10%; animation-duration: 20s; animation-delay: 5s; }
+.paw-icon:nth-child(12){ left: 60%; animation-duration: 22s; animation-delay: 2s; }
