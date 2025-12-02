@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api/axios";
 import { useAuth } from "../context/AuthContext";
-// ✅ Importamos componentes de Bootstrap y SweetAlert
+// Importamos componentes de Bootstrap y SweetAlert
 import { Modal, Button, Form } from "react-bootstrap"; 
 import Swal from 'sweetalert2';
 import './HomeUsuario.css';
@@ -10,16 +10,25 @@ import './HomeUsuario.css';
 const HomeUsuario = () => {
   const { usuario } = useAuth();
   const navigate = useNavigate();
+  
+  // Datos principales
   const [mascotas, setMascotas] = useState([]);
   const [turnos, setTurnos] = useState([]);
 
-  // Estados del Modal de Bootstrap
+  // Estados Modal Mascotas
   const [showModal, setShowModal] = useState(false);
   const [editando, setEditando] = useState(false);
   const [mascotaEditId, setMascotaEditId] = useState(null);
-
   const [formData, setFormData] = useState({
     nombre: "", edad: "", raza: "", peso: "", enfermedades: "", observaciones: "",
+  });
+
+  // --- NUEVO: ESTADOS PARA COMPLETAR PERFIL ---
+  const [showModalPerfil, setShowModalPerfil] = useState(false);
+  const [datosFaltantes, setDatosFaltantes] = useState({
+    telefono: "",
+    direccion: "",
+    dni: ""
   });
 
   // Cargar datos al iniciar
@@ -39,11 +48,64 @@ const HomeUsuario = () => {
     }
   };
 
+  // --- NUEVO: VERIFICAR PERFIL ---
+  const verificarPerfil = async () => {
+      if (!usuario) return;
+      try {
+          const res = await api.get('/duenos/mi-perfil');
+          const miPerfil = res.data;
+
+          // Si el perfil existe pero le falta teléfono O dirección, abrimos el modal
+          if (miPerfil && (!miPerfil.telefono || !miPerfil.direccion)) {
+              setDatosFaltantes({
+                  telefono: miPerfil.telefono || "",
+                  direccion: miPerfil.direccion || "",
+                  dni: miPerfil.dni || ""
+              });
+              setShowModalPerfil(true);
+          }
+      } catch (error) {
+          console.error("Error verificando perfil:", error);
+      }
+  };
+
   useEffect(() => {
-    if (usuario) cargarDatos();
+    if (usuario) {
+        cargarDatos();
+        verificarPerfil(); // <--- Ejecutamos la verificación
+    }
   }, [usuario]);
 
-  // Manejo del Modal (Abrir para Crear o Editar)
+  // --- HANDLERS ---
+
+  // NUEVO: Guardar Perfil
+  const handleCompletarPerfil = async () => {
+      if (!datosFaltantes.telefono || !datosFaltantes.direccion) {
+          Swal.fire({
+              title: 'Datos incompletos',
+              text: 'El teléfono y la dirección son obligatorios.',
+              icon: 'warning',
+              background: '#1e1e1e', color: '#fff'
+          });
+          return;
+      }
+
+      try {
+          await api.put('/duenos/mi-perfil', datosFaltantes);
+          Swal.fire({
+              title: '¡Perfil completado!',
+              text: 'Ahora puedes reservar turnos.',
+              icon: 'success',
+              background: '#1e1e1e', color: '#fff',
+              confirmButtonColor: '#00d4ff'
+          });
+          setShowModalPerfil(false);
+      } catch (error) {
+          Swal.fire({title: 'Error', text: 'No se pudieron guardar los datos.', icon: 'error', background: '#1e1e1e', color: '#fff'});
+      }
+  };
+
+  // Manejo del Modal Mascotas
   const handleAbrirModal = (mascota = null) => {
     if (mascota) {
       setEditando(true);
@@ -60,7 +122,6 @@ const HomeUsuario = () => {
     setShowModal(true);
   };
 
-  // Guardar Mascota
   const handleGuardar = async () => {
     try {
       const payload = { ...formData, dueno: usuario._id, tipoDueno: "Usuario" };
@@ -71,9 +132,7 @@ const HomeUsuario = () => {
             title: '¡Actualizado!', 
             text: 'Datos de la mascota actualizados.', 
             icon: 'success', 
-            background: '#1e1e1e', 
-            color: '#fff',
-            confirmButtonColor: '#00d4ff'
+            background: '#1e1e1e', color: '#fff', confirmButtonColor: '#00d4ff'
         });
       } else {
         await api.post("/mascotas", payload);
@@ -81,26 +140,17 @@ const HomeUsuario = () => {
             title: '¡Bienvenido!', 
             text: 'Nueva mascota agregada a la banda.', 
             icon: 'success', 
-            background: '#1e1e1e', 
-            color: '#fff',
-            confirmButtonColor: '#00d4ff'
+            background: '#1e1e1e', color: '#fff', confirmButtonColor: '#00d4ff'
         });
       }
 
       await cargarDatos();
       setShowModal(false);
     } catch (error) {
-      Swal.fire({
-        title: 'Error',
-        text: 'No se pudo guardar.',
-        icon: 'error',
-        background: '#1e1e1e', 
-        color: '#fff'
-      });
+      Swal.fire({title: 'Error', text: 'No se pudo guardar.', icon: 'error', background: '#1e1e1e', color: '#fff'});
     }
   };
 
-  // Eliminar Mascota
   const handleEliminar = async (id) => {
     const result = await Swal.fire({
       title: '¿Estás seguro?',
@@ -110,20 +160,14 @@ const HomeUsuario = () => {
       confirmButtonColor: '#d33',
       cancelButtonColor: '#3085d6',
       confirmButtonText: 'Sí, eliminar',
-      background: '#1e1e1e',
-      color: '#fff'
+      background: '#1e1e1e', color: '#fff'
     });
 
     if (result.isConfirmed) {
       try {
         await api.delete(`/mascotas/${id}`);
         await cargarDatos();
-        Swal.fire({
-            title: 'Eliminado', 
-            icon: 'success', 
-            background: '#1e1e1e', 
-            color: '#fff'
-        });
+        Swal.fire({title: 'Eliminado', icon: 'success', background: '#1e1e1e', color: '#fff'});
       } catch (error) {
         Swal.fire({title: 'Error', text: 'No se pudo eliminar.', icon: 'error', background: '#1e1e1e', color: '#fff'});
       }
@@ -131,7 +175,6 @@ const HomeUsuario = () => {
   };
 
   return (
-    // ⚠️ CAMBIO AQUÍ: Quitamos la clase 'container' para evitar conflictos de fondo blanco
     <div className="user-container">
       
       {/* HEADER DEL PANEL */}
@@ -183,7 +226,7 @@ const HomeUsuario = () => {
                             className="btn-reservar-rock"
                             onClick={() => navigate('/agendar', { state: { mascotaSeleccionada: m } })}
                         >
-                        📅 Turno
+                            📅 Turno
                         </button>
                     </div>
                 </div>
@@ -225,7 +268,60 @@ const HomeUsuario = () => {
         )}
       </div>
 
-      {/* MODAL (Estilizado por el CSS rockero) */}
+      {/* --- MODAL 1: COMPLETAR PERFIL (NUEVO) --- */}
+      {/* Usamos el mismo componente Modal de Bootstrap para que tenga el estilo oscuro */}
+      <Modal 
+        show={showModalPerfil} 
+        onHide={() => {}} // Bloqueamos cerrar haciendo click afuera
+        backdrop="static" // Fondo estático
+        keyboard={false}  // No cerrar con ESC
+        centered
+      >
+        <Modal.Header>
+          <Modal.Title className="text-white">📝 Completa tu Perfil</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <p className="text-muted small mb-3">
+             Para poder contactarte, necesitamos estos datos obligatorios.
+          </p>
+          <Form>
+            <Form.Group className="mb-3">
+              <Form.Label className="text-info">Teléfono / Celular *</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Ej: 11 5555 6666"
+                value={datosFaltantes.telefono}
+                onChange={(e) => setDatosFaltantes({ ...datosFaltantes, telefono: e.target.value })}
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label className="text-info">Dirección *</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Calle y altura"
+                value={datosFaltantes.direccion}
+                onChange={(e) => setDatosFaltantes({ ...datosFaltantes, direccion: e.target.value })}
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label className="text-info">DNI (Opcional)</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Tu documento"
+                value={datosFaltantes.dni}
+                onChange={(e) => setDatosFaltantes({ ...datosFaltantes, dni: e.target.value })}
+              />
+            </Form.Group>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button style={{backgroundColor: '#00d4ff', color:'black', border:'none', fontWeight:'bold', width:'100%'}} onClick={handleCompletarPerfil}>
+            Guardar Datos
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* --- MODAL 2: MASCOTAS (EXISTENTE) --- */}
       <Modal show={showModal} onHide={() => setShowModal(false)} centered>
         <Modal.Header closeButton>
           <Modal.Title className="text-white">{editando ? "✏️ Editar Ficha" : "🐾 Nueva Mascota"}</Modal.Title>
