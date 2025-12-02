@@ -1,9 +1,12 @@
-// src/pages/TurnosAdmin.jsx
 import React, { useEffect, useState } from "react";
 import api from "../api/axios";
+import { useAuth } from "../context/AuthContext";
 import "./TurnosAdmin.css";
 
 const TurnosAdmin = () => {
+  const { usuario } = useAuth();
+
+  // Estados
   const [todosLosTurnos, setTodosLosTurnos] = useState([]);
   const [listaDuenos, setListaDuenos] = useState([]); 
   const [listaMascotas, setListaMascotas] = useState([]); 
@@ -15,9 +18,11 @@ const TurnosAdmin = () => {
   const [duenoSeleccionado, setDuenoSeleccionado] = useState("");
   const [mascotaSeleccionada, setMascotaSeleccionada] = useState("");
 
+  const [esBloqueo, setEsBloqueo] = useState(false);
+  const [motivoBloqueo, setMotivoBloqueo] = useState("");
+
   const HORARIOS_LABORALES = ["08", "09", "10", "11", "12", "13", "14", "15", "16", "17"];
 
-  // Cargar Datos
   const cargarDatos = async () => {
     try {
       const [resTurnos, resDuenos, resMascotas] = await Promise.all([
@@ -27,15 +32,10 @@ const TurnosAdmin = () => {
       ]);
 
       setTodosLosTurnos(resTurnos.data);
-      
-      // Manejo robusto de arrays
       const duenosData = Array.isArray(resDuenos.data) ? resDuenos.data : resDuenos.data.duenos || [];
       setListaDuenos(duenosData);
-
       const mascotasData = Array.isArray(resMascotas.data) ? resMascotas.data : resMascotas.data.mascotas || [];
       setListaMascotas(mascotasData);
-
-      console.log("✅ Datos cargados: ", { turnos: resTurnos.data.length, duenos: duenosData.length, mascotas: mascotasData.length });
 
     } catch (error) {
       console.error("Error al cargar datos:", error);
@@ -46,46 +46,41 @@ const TurnosAdmin = () => {
     cargarDatos();
   }, []);
 
-  // Abrir Modal
   const clickTurnoLibre = (hora) => {
-    console.log("🟢 Click en turno libre:", hora); // Debug
     setTurnoEnProceso({ fecha: fechaSeleccionada, hora });
     setDuenoSeleccionado("");
     setMascotaSeleccionada("");
+    setEsBloqueo(false);
+    setMotivoBloqueo("");
     setModalAbierto(true);
   };
 
-  // Guardar Turno
-  const handleAsignarTurno = async (e) => {
+  const handleGuardar = async (e) => {
     e.preventDefault();
-    if (!duenoSeleccionado || !mascotaSeleccionada) {
-      alert("⚠️ Por favor selecciona un dueño y una mascota");
-      return;
-    }
+    if (esBloqueo && !motivoBloqueo.trim()) return alert("Escribe el motivo.");
+    if (!esBloqueo && (!duenoSeleccionado || !mascotaSeleccionada)) return alert("Selecciona cliente y mascota.");
 
     try {
       const payload = {
-        fecha: turnoEnProceso.fecha,
+        fecha: turnoEnProceso.fecha + "T12:00:00",
         hora: turnoEnProceso.hora,
-        mascota: mascotaSeleccionada,
-        dueno: duenoSeleccionado,
+        bloqueado: esBloqueo,
+        nombreCliente: esBloqueo ? motivoBloqueo : null,
+        mascota: esBloqueo ? null : mascotaSeleccionada,
+        dueno: esBloqueo ? usuario._id : duenoSeleccionado,
       };
 
-      console.log("📤 Enviando reserva admin:", payload);
       await api.post("/turnos", payload);
-      
-      alert("✅ Turno asignado correctamente");
+      alert(esBloqueo ? "Horario suspendido." : "Turno asignado.");
       setModalAbierto(false);
       cargarDatos(); 
     } catch (error) {
-      console.error(error);
-      alert(error.response?.data?.mensaje || "Error al asignar turno");
+      alert(error.response?.data?.mensaje || "Error al procesar");
     }
   };
 
-  // Cancelar Turno
   const handleCancelarTurno = async (id) => {
-    if (!window.confirm("¿Estás seguro de cancelar este turno?")) return;
+    if (!window.confirm("¿Liberar este horario?")) return;
     try {
       await api.delete(`/turnos/${id}`);
       cargarDatos();
@@ -100,31 +95,28 @@ const TurnosAdmin = () => {
       return fechaTurno === fechaSeleccionada && t.hora === hora;
     });
   };
-   
+
   const mascotasFiltradas = listaMascotas.filter(m => {
-      const idDuenoMascota = typeof m.dueno === 'object' && m.dueno !== null ? m.dueno._id : m.dueno;   
-      return String(idDuenoMascota) === String(duenoSeleccionado);
+      const idDueno = typeof m.dueno === 'object' && m.dueno !== null ? m.dueno._id : m.dueno;
+      return String(idDueno) === String(duenoSeleccionado);
   });
 
-const turnosOrdenados = [...todosLosTurnos].sort((a, b) => {
-    return new Date(b.fecha) - new Date(a.fecha);
-  });
-
-  // Helper para obtener "Mes Año" (Ej: "Noviembre 2025")
+  const turnosOrdenados = [...todosLosTurnos].sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+  
   const obtenerMesAno = (fechaISO) => {
     const fecha = new Date(fechaISO);
-    // Truco para capitalizar la primera letra (noviembre -> Noviembre)
     const mes = fecha.toLocaleString('es-ES', { month: 'long', year: 'numeric' });
     return mes.charAt(0).toUpperCase() + mes.slice(1);
   };
 
-
   return (
     <div className="admin-turnos-container">
-      <h2 style={{ textAlign: "center", color: "#333", marginBottom:'20px' }}>📅 Administración de Turnos</h2>
+      <h2 style={{ textAlign: "center", color: "#fff", marginBottom:'20px', textTransform:'uppercase', fontWeight:'800' }}>
+        📅 Panel de Turnos
+      </h2>
 
       <div className="filtros-container">
-        <label style={{ fontWeight: "bold", marginRight: "10px" }}>Visualizar día:</label>
+        <label style={{ fontWeight: "bold", marginRight: "10px", color:'#ccc' }}>Día:</label>
         <input
           type="date"
           className="input-fecha-admin"
@@ -133,7 +125,7 @@ const turnosOrdenados = [...todosLosTurnos].sort((a, b) => {
         />
       </div>
 
-      <h3 style={{ borderBottom: "2px solid #eee", paddingBottom: "10px" }}>
+      <h3 style={{ borderBottom: "1px solid #444", paddingBottom: "10px", color:'#00d4ff' }}>
         Vista Diaria: {new Date(fechaSeleccionada + 'T00:00:00').toLocaleDateString()}
       </h3>
 
@@ -142,103 +134,86 @@ const turnosOrdenados = [...todosLosTurnos].sort((a, b) => {
           const turno = getTurnoEnHorario(hora);
 
           if (turno) {
+            const esSuspendido = turno.bloqueado;
             return (
-              <div key={hora} className="turno-card turno-ocupado">
+              <div key={hora} className={`turno-card ${esSuspendido ? 'turno-suspendido' : 'turno-ocupado'}`}>
                 <div className="hora-grande">{hora}:00</div>
-                <div className="info-dueno">
-                  <strong>{turno.mascota?.nombre || "Desconocido"}</strong>
-                  <br />
-                  <small>{turno.dueno?.nombres} {turno.dueno?.apellidos}</small>
-                  <br />
-                  <small>📞 {turno.dueno?.telefono || "-"}</small>
-                </div>
+                {esSuspendido ? (
+                    <div className="info-dueno">
+                        <strong style={{color:'#ff6b6b'}}>⛔ SUSPENDIDO</strong><br/>
+                        <small>"{turno.nombreCliente}"</small>
+                    </div>
+                ) : (
+                    <div className="info-dueno">
+                        <strong style={{color:'#fff'}}>{turno.mascota?.nombre || "Desconocido"}</strong><br/>
+                        <small style={{color:'#ccc'}}>{turno.dueno?.nombres} {turno.dueno?.apellidos}</small>
+                    </div>
+                )}
               </div>
             );
           } else {
             return (
-              <div 
-                key={hora} 
-                className="turno-card turno-libre"
-                onClick={() => clickTurnoLibre(hora)}
-                title="Click para asignar turno"
-              >
+              <div key={hora} className="turno-card turno-libre" onClick={() => clickTurnoLibre(hora)}>
                 <div className="hora-grande">{hora}:00</div>
-                <div>➕ Asignar</div>
+                <div style={{color:'#888'}}>➕ Disponible</div>
               </div>
             );
           }
         })}
       </div>
 
-      {/* TABLA HISTÓRICA */}
-      <h3 style={{ marginTop: "40px", borderBottom: "2px solid #eeeeee", paddingBottom: "10px" }}>
-        📑 Listado Histórico
+      <h3 style={{ marginTop: "40px", borderBottom: "1px solid #444", paddingBottom: "10px", color:'#00d4ff' }}>
+        📑 Historial Completo
       </h3>
-
+      
       <div style={{ overflowX: "auto" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "10px" }}>
+        <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "10px", color: 'white' }}>
           <thead>
-            <tr style={{ backgroundColor: "#2c3e50", color: "white" }}>
-              <th style={{ padding: "12px" }}>Fecha</th>
-              <th style={{ padding: "12px" }}>Hora</th>
-              {/* Nueva Columna solicitada bien explícita */}
-              <th style={{ padding: "12px" }}>Cliente (Dueño)</th> 
-              <th style={{ padding: "12px" }}>Mascota</th>
-              <th style={{ padding: "12px" }}>Contacto</th>
-              <th style={{ padding: "12px" }}>Acción</th>
+            <tr style={{ backgroundColor: "#222", color: "#00d4ff", borderBottom: '2px solid #00d4ff' }}>
+              <th style={{ padding: "15px" }}>Fecha</th>
+              <th style={{ padding: "15px" }}>Hora</th>
+              <th style={{ padding: "15px" }}>Detalle</th>
+              <th style={{ padding: "15px" }}>Acción</th>
             </tr>
           </thead>
           <tbody>
             {turnosOrdenados.map((t, index) => {
               const mesActual = obtenerMesAno(t.fecha);
-              
-              // Miramos el turno anterior para ver si cambió el mes
               const turnoAnterior = turnosOrdenados[index - 1];
               const mesAnterior = turnoAnterior ? obtenerMesAno(turnoAnterior.fecha) : null;
-              
               const mostrarSeparador = mesActual !== mesAnterior;
 
               return (
                 <React.Fragment key={t._id}>
-                  {/* SEPARADOR DE MES */}
                   {mostrarSeparador && (
-                    <tr style={{ backgroundColor: "#e9ecef" }}>
-                      <td colSpan="6" style={{ padding: "10px 15px", fontWeight: "bold", color: "#495057", textTransform: "uppercase", letterSpacing: "1px" }}>
+                    <tr style={{ backgroundColor: "#333" }}>
+                      <td colSpan="4" style={{ padding: "8px 15px", fontWeight: "bold", color: "#ccc", textTransform: 'uppercase', fontSize:'0.9rem' }}>
                         📅 {mesActual}
                       </td>
                     </tr>
                   )}
-
-                  {/* FILA DE DATOS */}
-                  <tr style={{ borderBottom: "1px solid #ddd", textAlign: "center", backgroundColor: "#49505705" }}>
-                    <td style={{ padding: "10px" }}>
-                      {new Date(t.fecha).toLocaleDateString()}
+                  {/* FILAS OSCURAS */}
+                  <tr style={{ 
+                      borderBottom: "1px solid #333", 
+                      textAlign: "center", 
+                      backgroundColor: t.bloqueado ? '#2c1a1d' : '#1e1e1e' // Fondo oscuro rojizo o gris
+                  }}>
+                    <td style={{ padding: "12px" }}>{new Date(t.fecha).toLocaleDateString()}</td>
+                    <td style={{ padding: "12px", fontWeight: 'bold', color:'#00d4ff' }}>{t.hora}:00</td>
+                    <td style={{ padding: "12px", textAlign: 'left' }}>
+                       {t.bloqueado ? (
+                           <span style={{color: '#ff6b6b'}}>⛔ {t.nombreCliente || 'Suspendido'}</span>
+                       ) : (
+                           <span>
+                             <span style={{fontWeight:'bold', color:'white'}}>{t.mascota?.nombre}</span> 
+                             <span style={{color:'#888'}}> - {t.dueno?.nombres} {t.dueno?.apellidos}</span>
+                           </span>
+                       )}
                     </td>
-                    <td style={{ padding: "10px", fontWeight: 'bold' }}>
-                      {t.hora}:00
-                    </td>
-                    
-                    {/* COLUMNA NOMBRE Y APELLIDO (Bien destacada) */}
-                    <td style={{ padding: "10px", textAlign: 'left' }}>
-                      <div style={{fontWeight: 'bold', color: '#132631ff'}}>
-                        {t.dueno?.nombres} {t.dueno?.apellidos}
-                      </div>
-                    </td>
-
-                    <td style={{ padding: "10px" }}>
-                      {t.mascota?.nombre || <span style={{color:'#ccc'}}>- Eliminada -</span>}
-                    </td>
-
-                    {/* Columna extra para email/teléfono para no ensuciar el nombre */}
-                    <td style={{ padding: "10px", fontSize: '0.85rem', color: '#130707ff' }}>
-                      {t.dueno?.email} <br/>
-                      {t.dueno?.telefono || ''}
-                    </td>
-
-                    <td style={{ padding: "10px" }}>
-                      <button onClick={() => handleCancelarTurno(t._id)} style={{ backgroundColor: "red", color: "white", border: "none", padding: "5px 10px", borderRadius: "4px", cursor: "pointer" }}>
-                      Cancelar
-                    </button>
+                    <td style={{ padding: "12px" }}>
+                      <button onClick={() => handleCancelarTurno(t._id)} style={{ background: "transparent", border: "1px solid #dc3545", color: "#dc3545", padding: "5px 15px", borderRadius: "20px", cursor: "pointer", fontSize:'0.85rem' }}>
+                        Liberar
+                      </button>
                     </td>
                   </tr>
                 </React.Fragment>
@@ -248,60 +223,48 @@ const turnosOrdenados = [...todosLosTurnos].sort((a, b) => {
         </table>
       </div>
 
-      {/* === MODAL === */}
       {modalAbierto && (
         <div className="modal-overlay">
           <div className="modal-content">
-            <h3 style={{marginTop: 0}}>Asignar Turno</h3>
-            <p>Fecha: {new Date(turnoEnProceso.fecha + 'T00:00:00').toLocaleDateString()} a las {turnoEnProceso.hora}:00 hs</p>
+            <h3 style={{marginTop: 0, color:'#00d4ff'}}>Gestionar Horario</h3>
+            <p className="mb-4 text-white-50">
+                {new Date(turnoEnProceso.fecha + 'T00:00:00').toLocaleDateString()} a las {turnoEnProceso.hora}:00 hs
+            </p>
             
-            <form onSubmit={handleAsignarTurno}>
-              <div className="form-group">
-                <label>Cliente:</label>
-                <select 
-                    className="form-control"
-                    value={duenoSeleccionado}
-                    onChange={(e) => {
-                        setDuenoSeleccionado(e.target.value);
-                        setMascotaSeleccionada(""); 
-                    }}
-                    required
-                >
-                    <option value="">-- Seleccionar Cliente --</option>
-                    {listaDuenos.map(d => (
-                        <option key={d._id} value={d._id}>
-                            {d.nombres} {d.apellidos} ({d.email})
-                        </option>
-                    ))}
-                </select>
+            <form onSubmit={handleGuardar}>
+              <div className="bloqueo-box">
+                  <input type="checkbox" id="chkBloqueo" checked={esBloqueo} onChange={(e) => setEsBloqueo(e.target.checked)} />
+                  <label htmlFor="chkBloqueo">Bloquear por imprevisto</label>
               </div>
 
-              <div className="form-group">
-                <label>Mascota:</label>
-                <select 
-                    className="form-control"
-                    value={mascotaSeleccionada}
-                    onChange={(e) => setMascotaSeleccionada(e.target.value)}
-                    required
-                    disabled={!duenoSeleccionado}
-                >
-                    <option value="">-- Seleccionar Mascota --</option>
-                    {mascotasFiltradas.length > 0 ? (
-                        mascotasFiltradas.map(m => (
-                            <option key={m._id} value={m._id}>{m.nombre} ({m.raza})</option>
-                        ))
-                    ) : (
-                        <option disabled>Sin mascotas registradas</option>
-                    )}
-                </select>
-              </div>
+              {esBloqueo ? (
+                  <div className="form-group fade-in">
+                      <label style={{color:'#ccc'}}>Motivo:</label>
+                      <input type="text" className="form-control" placeholder="Ej: Urgencia..." value={motivoBloqueo} onChange={(e) => setMotivoBloqueo(e.target.value)} autoFocus />
+                  </div>
+              ) : (
+                  <>
+                    <div className="form-group">
+                        <label style={{color:'#ccc'}}>Cliente:</label>
+                        <select className="form-control" value={duenoSeleccionado} onChange={(e) => { setDuenoSeleccionado(e.target.value); setMascotaSeleccionada(""); }}>
+                            <option value="">-- Seleccionar --</option>
+                            {listaDuenos.map(d => (<option key={d._id} value={d._id}>{d.nombres} {d.apellidos}</option>))}
+                        </select>
+                    </div>
+                    <div className="form-group">
+                        <label style={{color:'#ccc'}}>Mascota:</label>
+                        <select className="form-control" value={mascotaSeleccionada} onChange={(e) => setMascotaSeleccionada(e.target.value)} disabled={!duenoSeleccionado}>
+                            <option value="">-- Seleccionar --</option>
+                            {mascotasFiltradas.map(m => (<option key={m._id} value={m._id}>{m.nombre}</option>))}
+                        </select>
+                    </div>
+                  </>
+              )}
 
               <div className="modal-actions">
-                <button type="button" onClick={() => setModalAbierto(false)} className="form-control" style={{width:'auto', background:'#ccc', border:'none'}}>
-                    Cancelar
-                </button>
-                <button type="submit" className="form-control" style={{width:'auto', background:'#28a745', color:'white', border:'none'}}>
-                    Confirmar
+                <button type="button" onClick={() => setModalAbierto(false)} style={{padding:'8px 15px', border:'1px solid #555', background:'transparent', color:'#ccc', borderRadius:'5px', cursor:'pointer'}}>Cancelar</button>
+                <button type="submit" style={{padding:'8px 15px', border:'none', background: esBloqueo ? '#dc3545' : '#00d4ff', color: esBloqueo ? 'white' : 'black', borderRadius:'5px', cursor:'pointer', fontWeight:'bold'}}>
+                    {esBloqueo ? "Bloquear" : "Confirmar"}
                 </button>
               </div>
             </form>
