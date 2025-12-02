@@ -13,7 +13,7 @@ const Footer = () => {
               🐾 Dog & Roll
             </h5>
             <p>
-              La peluquería canina con más onda de La Matanza. 
+              La peluquería canina con más onda de Virrey del Pino. 
               Tratamos a tu mascota como una verdadera estrella de rock.
             </p>
           </div>

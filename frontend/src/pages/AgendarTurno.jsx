@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate, useLocation } from "react-router-dom";
 import api from "../api/axios";
+import Swal from 'sweetalert2'; // <--- Importamos SweetAlert2
 
 const AgendarTurno = () => {
   const { usuario } = useAuth();
@@ -15,11 +16,9 @@ const AgendarTurno = () => {
   const [horasDisponibles, setHorasDisponibles] = useState([]);
   const [cargandoHoras, setCargandoHoras] = useState(false);
 
-  // Lista de feriados (Misma que el backend)
-  // Nota: El input date devuelve formato YYYY-MM-DD
+  // Feriados (Misma lista que backend para feedback inmediato)
   const feriadosBackend = ['01-01-2025', '24-03-2025', '02-04-2025', '01-05-2025', '09-07-2025', '25-12-2025'];
   
-  // Convertimos los feriados de DD-MM-YYYY a YYYY-MM-DD para poder comparar fácil
   const feriadosBloqueados = feriadosBackend.map(f => {
       const [dd, mm, yyyy] = f.split('-');
       return `${yyyy}-${mm}-${dd}`;
@@ -43,7 +42,7 @@ const AgendarTurno = () => {
     if (usuario) fetchMascotas();
   }, [usuario, location.state]);
 
-  // VALIDACIÓN DE FECHA (Domingos y Feriados) 🛑
+  // VALIDACIÓN FECHA (Con SweetAlert)
   const handleFechaChange = (e) => {
       const fechaInput = e.target.value;
       if (!fechaInput) {
@@ -51,29 +50,37 @@ const AgendarTurno = () => {
           return;
       }
 
-      // Creamos fecha asegurando zona horaria local (agregando T00:00:00)
       const diaSeleccionado = new Date(fechaInput + "T00:00:00");
       const esDomingo = diaSeleccionado.getDay() === 0;
       const esFeriado = feriadosBloqueados.includes(fechaInput);
 
       if (esDomingo) {
-          alert("🚫 Lo sentimos, la peluquería permanece cerrada los domingos.");
-          setFecha(""); // Borramos la fecha
+          Swal.fire({
+            title: '¡Domingo Cerrado!',
+            text: 'Lo sentimos, la peluquería descansa los domingos.',
+            icon: 'info',
+            background: '#1e1e1e', color: '#fff', confirmButtonColor: '#00d4ff'
+          });
+          setFecha("");
           return;
       }
 
       if (esFeriado) {
-          alert("🚫 Esa fecha corresponde a un feriado. Por favor elige otro día.");
-          setFecha(""); // Borramos la fecha
+          Swal.fire({
+            title: 'Es Feriado 🏖️',
+            text: 'Disfruta el día, nosotros también lo haremos.',
+            icon: 'info',
+            background: '#1e1e1e', color: '#fff', confirmButtonColor: '#00d4ff'
+          });
+          setFecha("");
           return;
       }
 
-      // Si pasó las validaciones, guardamos la fecha
       setFecha(fechaInput);
-      setHora(""); // Reseteamos la hora porque cambió el día
+      setHora("");
   };
 
-  // Consultar horas disponibles
+  // Consultar horas
   useEffect(() => {
     const consultarHoras = async () => {
         if (!fecha) {
@@ -99,60 +106,98 @@ const AgendarTurno = () => {
   }, [fecha]);
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  if (!mascotaSeleccionada || !fecha || !hora) {
-    alert("⚠️ Por favor completa todos los campos");
-    return;
-  }
-
-  try {
-    const payload = {
-      fecha: fecha,
-      hora: hora,
-      mascota: mascotaSeleccionada,
-      dueno: usuario._id
-    };
-
-    await api.post("/turnos", payload);
-    
-    alert("✅ ¡Turno reservado con éxito!");
-    navigate("/usuario");
-
-  } catch (error) {
-    // MANEJO DE ERRORES ESPECÍFICO
-    if (error.response?.status === 409) {
-      // Si el error es 409, significa que nos ganaron de mano
-      alert("🚫 " + error.response.data.mensaje);
-      
-      // Acción inteligente: Recargamos los horarios para que desaparezca el ocupado
-      // Forzamos la actualización llamando a la API de nuevo
-      const [yyyy, mm, dd] = fecha.split("-");
-      const fechaFormateada = `${dd}-${mm}-${yyyy}`;
-      const res = await api.get(`/turnos/disponibles?fecha=${fechaFormateada}`);
-      setHorasDisponibles(res.data); 
-      setHora(""); // Limpiamos la hora seleccionada que estaba mal
-      
-    } else {
-      // Otros errores
-      console.error("Error al reservar:", error.response?.data);
-      alert(error.response?.data?.mensaje || "Hubo un error al reservar el turno");
+    e.preventDefault();
+    if (!mascotaSeleccionada || !fecha || !hora) {
+      Swal.fire({
+        title: 'Faltan datos',
+        text: 'Por favor completa todos los campos para reservar.',
+        icon: 'warning',
+        background: '#1e1e1e', color: '#fff', confirmButtonColor: '#00d4ff'
+      });
+      return;
     }
-  }
-};
+
+    try {
+        const payload = {
+            fecha: fecha,
+            hora: hora,
+            mascota: mascotaSeleccionada,
+            dueno: usuario._id
+        };
+
+        await api.post("/turnos", payload);
+        
+        // ALERTA DE ÉXITO 🎸
+        await Swal.fire({
+            title: '¡Turno Confirmado!',
+            text: 'Te esperamos para darle el mejor look a tu mascota.',
+            icon: 'success',
+            background: '#1e1e1e',
+            color: '#fff',
+            confirmButtonColor: '#00d4ff',
+            confirmButtonText: '¡Genial!'
+        });
+
+        navigate("/usuario"); // Volvemos al panel
+    } catch (error) {
+        // ALERTA DE ERROR
+        Swal.fire({
+            title: 'Ups...',
+            text: error.response?.data?.mensaje || "Hubo un error al reservar el turno.",
+            icon: 'error',
+            background: '#1e1e1e',
+            color: '#fff',
+            confirmButtonColor: '#d33'
+        });
+        
+        // Si fue conflicto de horario, recargamos las horas
+        if (error.response?.status === 409) {
+             const [yyyy, mm, dd] = fecha.split("-");
+             const fechaFormateada = `${dd}-${mm}-${yyyy}`;
+             const res = await api.get(`/turnos/disponibles?fecha=${fechaFormateada}`);
+             setHorasDisponibles(res.data);
+             setHora("");
+        }
+    }
+  };
+
+  // Estilos en línea para mantener coherencia visual sin tocar CSS global
+  const containerStyle = {
+      maxWidth: "500px", 
+      margin: "40px auto", 
+      padding: "30px", 
+      boxShadow: "0 0 20px rgba(0, 212, 255, 0.2)", // Brillo azul neón
+      borderRadius: "15px", 
+      backgroundColor: "#1e1e1e", // Fondo oscuro card
+      color: "white",
+      border: "1px solid #333"
+  };
+
+  const labelStyle = {
+      display: 'block', fontWeight: 'bold', marginBottom: '8px', color: '#00d4ff'
+  };
+
+  const inputStyle = {
+      width: '100%', padding: '12px', borderRadius: '5px', 
+      border: '1px solid #444', backgroundColor: '#2c2c2c', color: 'white',
+      marginBottom: '20px'
+  };
 
   return (
-    <div style={{ maxWidth: "500px", margin: "40px auto", padding: "20px", boxShadow: "0 4px 10px rgba(0,0,0,0.1)", borderRadius: "10px", backgroundColor: "white" }}>
-      <h2 style={{ textAlign: "center", color: "#2f9bda", marginBottom: "20px" }}>📅 Agendar Turno</h2>
+    <div style={containerStyle}>
+      <h2 style={{ textAlign: "center", color: "white", marginBottom: "30px", textTransform: "uppercase", fontWeight: "800" }}>
+        📅 Agendar Turno
+      </h2>
 
       {!usuario ? (
-        <p style={{ color: "red", textAlign: "center" }}>Debes iniciar sesión.</p>
+        <p style={{ color: "#ff4d4d", textAlign: "center" }}>Debes iniciar sesión.</p>
       ) : (
         <form onSubmit={handleSubmit}>
-          {/* Selección de mascota */}
-          <div style={{marginBottom: '15px'}}>
-            <label style={{display:'block', fontWeight:'bold'}}>Mascota:</label>
+          
+          <div>
+            <label style={labelStyle}>Mascota:</label>
             <select
-              style={{width:'100%', padding:'10px', border:'1px solid #ccc', borderRadius:'5px'}}
+              style={inputStyle}
               value={mascotaSeleccionada}
               onChange={(e) => setMascotaSeleccionada(e.target.value)}
               required
@@ -164,35 +209,32 @@ const AgendarTurno = () => {
             </select>
           </div>
 
-          {/* Selección de fecha */}
-          <div style={{marginBottom: '15px'}}>
-            <label style={{display:'block', fontWeight:'bold'}}>Fecha:</label>
+          <div>
+            <label style={labelStyle}>Fecha:</label>
             <input
               type="date"
-              style={{width:'100%', padding:'10px', border:'1px solid #ccc', borderRadius:'5px'}}
+              style={inputStyle}
               value={fecha}
               min={new Date().toISOString().split("T")[0]} 
-              onChange={handleFechaChange} // <--- AQUI USAMOS LA NUEVA VALIDACIÓN
+              onChange={handleFechaChange}
               required
             />
-             <small style={{color:'#666'}}>* Lunes a Sábados (excepto feriados)</small>
           </div>
 
-          {/* Selección de hora */}
-          <div style={{marginBottom: '15px'}}>
-            <label style={{display:'block', fontWeight:'bold'}}>Horario:</label>
+          <div>
+            <label style={labelStyle}>Horario:</label>
             {cargandoHoras ? (
-                <p>Buscando horarios...</p>
+                <p style={{color: '#aaa', fontStyle:'italic'}}>Buscando horarios...</p>
             ) : (
                 <select
-                style={{width:'100%', padding:'10px', border:'1px solid #ccc', borderRadius:'5px'}}
+                style={inputStyle}
                 value={hora}
                 onChange={(e) => setHora(e.target.value)}
                 required
                 disabled={!fecha || horasDisponibles.length === 0}
                 >
                 <option value="">
-                    {!fecha ? "-- Elige fecha --" : horasDisponibles.length === 0 ? "Sin cupos" : "-- Selecciona --"}
+                    {!fecha ? "-- Elige fecha --" : horasDisponibles.length === 0 ? "Sin cupos este día" : "-- Selecciona --"}
                 </option>
                 {horasDisponibles.map((h) => (
                     <option key={h} value={h}>{h}:00 hs</option>
@@ -203,7 +245,16 @@ const AgendarTurno = () => {
 
           <button
             type="submit"
-            style={{ width: "100%", padding: "12px", backgroundColor: "#2f9bda", color: "white", border: "none", borderRadius: "5px", fontWeight: "bold", cursor: "pointer" }}
+            style={{ 
+                width: "100%", padding: "15px", 
+                backgroundColor: "#00d4ff", color: "black", 
+                border: "none", borderRadius: "30px", 
+                fontWeight: "800", textTransform: "uppercase",
+                cursor: "pointer", marginTop: "10px",
+                transition: "transform 0.2s"
+            }}
+            onMouseOver={(e) => e.target.style.transform = "scale(1.02)"}
+            onMouseOut={(e) => e.target.style.transform = "scale(1)"}
           >
             Confirmar Turno
           </button>
