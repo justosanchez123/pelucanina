@@ -9,6 +9,7 @@ import HomeAdmin from "./pages/HomeAdmin";
 import Login from "./pages/Login";
 import Registro from "./pages/Registro";
 import AgendarTurno from "./pages/AgendarTurno";
+import Footer from "./components/Footer/Footer";
 
 
 import MascotasUsuario from "./pages/MascotasUsuario";
@@ -72,7 +73,7 @@ function App() {
           element={usuario ? <AgendarTurno /> : <Navigate to="/login" replace />}
         />
       </Routes>
-
+      <Footer />
     </Router>
   );
 }

@@ -1,0 +1,122 @@
+/* ======================== */
+/*     FOOTER METAL DARK    */
+/* ======================== */
+
+.footer-rock {
+    background: repeating-linear-gradient(
+        135deg,
+        #111 0px,
+        #111 4px,
+        #0c0c0c 4px,
+        #0c0c0c 8px
+    ) !important; /* Metal cepillado oscuro */
+
+    border-top: 3px solid #00d4ff;
+    box-shadow: 0 -5px 25px rgba(0, 212, 255, 0.25);
+
+    color: #eee !important;
+    padding-top: 50px;
+    padding-bottom: 40px;
+    font-size: 0.95rem;
+
+    /* brillo metálico leve */
+    position: relative;
+}
+
+.footer-rock::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 8px;
+    background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0.15),
+        rgba(255, 255, 255, 0),
+        rgba(255, 255, 255, 0.15)
+    );
+}
+
+/* ======================== */
+/*  TEXTO Y LINKS GENERALES */
+/* ======================== */
+
+.footer-rock p,
+.footer-rock a,
+.footer-rock small,
+.footer-rock h5,
+.footer-rock span {
+    background: transparent !important;
+    color: #ccc !important;
+}
+
+.footer-rock a:hover {
+    color: #00d4ff !important;
+    text-shadow: 0 0 6px #00d4ff;
+}
+
+
+/* ======================== */
+/*         TÍTULO           */
+/* ======================== */
+
+.title-neon-footer {
+    color: #fff !important;
+    text-shadow: 0 0 10px #ff00cc, 0 0 5px #ff0080;
+    font-weight: 900;
+}
+
+
+/* ======================== */
+/*       LINKS CONTACTO     */
+/* ======================== */
+
+.footer-link {
+    color: #bfbfbf !important;
+    margin-bottom: 8px;
+    display: block;
+    transition: 0.3s;
+}
+
+.footer-link:hover {
+    padding-left: 6px;
+    color: #00d4ff !important;
+    text-shadow: 0 0 8px #00d4ff;
+}
+
+
+/* ======================== */
+/*      REDES SOCIALES      */
+/* ======================== */
+
+.social-btn {
+    border-color: #444 !important;
+    color: #ddd !important;
+    width: 100%;
+    background: rgba(255,255,255,0.05) !important;
+    transition: 0.3s;
+}
+
+.social-btn:hover {
+    background: #ff00cc !important;
+    border-color: #ff00cc !important;
+    color: white !important;
+    box-shadow: 0 0 12px rgba(255, 0, 204, 0.6);
+    transform: translateY(-2px);
+}
+
+
+/* ======================== */
+/*     HR - DIVISORIA       */
+/* ======================== */
+
+.hr-neon {
+    border-color: #444 !important;
+    opacity: 0.4 !important;
+}
+
+
+.footer-rock * {
+    background: transparent !important;
+}
