@@ -1,4 +1,3 @@
-/* src/index.css */
 :root {
   /* --- PALETA DOG & ROLL --- */
   --bg-dark: #121212;       /* Fondo Principal */
@@ -19,8 +18,6 @@ body {
 }
 
 /* --- OVERRIDES PARA BOOTSTRAP DARK --- */
-/* Esto oscurece los Modales y Inputs de Bootstrap automáticamente */
-
 .modal-content {
   background-color: var(--bg-card) !important;
   color: var(--text-main) !important;
@@ -57,15 +54,4 @@ a {
 a:hover {
   color: var(--neon-pink);
   text-shadow: 0 0 8px var(--neon-pink);
-}
-
-
-
-
-:root {
-  --bg-dark: #0f0f0f;      /* Fondo general oscuro */
-  --bg-card: #1a1a1a;      /* Fondo oscuro de las cards */
-  --text-muted: #cccccc;   /* Texto gris suave */
-  --neon-blue: #00d4ff;
-  --neon-pink: #ff009d;
 }

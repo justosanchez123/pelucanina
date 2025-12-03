@@ -1,126 +1,173 @@
-/* src/pages/Home.css */
+/* =========================================
+   1. CONFIGURACIÓN DEL ESCENARIO (LAYOUT)
+   ========================================= */
 
+/* Contenedor principal de la página */
 .home-container {
-    background-color: var(--bg-dark);
-    overflow-x: hidden;
+  background-color: var(--bg-dark); /* Usa el negro global */
+  overflow-x: hidden; /* Evita scroll horizontal si algo se sale */
 }
 
-/* CAJA CENTRAL */
+/* Caja central donde está el perro y el título */
 .main-stage-box {
-    position: relative;
-    z-index: 10;
+  position: relative;
+  z-index: 10; /* Se asegura de estar por encima de los elementos laterales */
 }
 
-/* TÍTULO NEÓN */
+/* =========================================
+   2. TIPOGRAFÍA Y EFECTOS NEÓN
+   ========================================= */
+
+/* Título Principal "DOG & ROLL" */
 .title-neon {
-    font-weight: 900;
-    color: var(--neon-blue);
-    text-shadow: 0 0 10px rgba(0, 212, 255, 0.6);
+  font-weight: 900;
+  color: var(--neon-blue); /* Color Cian */
+  /* Sombra difuminada para crear el efecto de luz de neón */
+  text-shadow: 0 0 15px rgba(0, 212, 255, 0.6);
+  font-size: 4.5rem; /* Tamaño gigante */
+  margin-bottom: 0;
 }
 
+/* Efecto de contorno (Stroke) para el "&" */
 .text-stroke {
-    color: transparent;
-    -webkit-text-stroke: 2px white;
+  color: transparent; /* Relleno invisible */
+  -webkit-text-stroke: 3px white; /* Borde blanco grueso */
 }
 
-/* IMAGEN PRINCIPAL */
+/* =========================================
+   3. IMAGEN PRINCIPAL (PROTAGONISTA)
+   ========================================= */
+
 .main-dog-img {
-    max-height: 400px;
-    filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));
-    transition: transform 0.3s;
+  max-height: 500px; /* Altura máxima grande */
+  width: auto;
+  /* Sombra en el suelo para dar profundidad 3D */
+  filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.6));
+  transition: transform 0.3s ease; /* Suaviza el movimiento */
 }
 
+/* Efecto al pasar el mouse sobre el perro principal */
 .main-dog-img:hover {
-    transform: scale(1.05) rotate(2deg);
+  transform: scale(1.02) rotate(1deg); /* Crece un poquito y se inclina */
 }
 
-/* BOTÓN GRANDE */
+/* =========================================
+   4. BOTÓN DE LLAMADA A LA ACCIÓN (CTA)
+   ========================================= */
+
 .btn-cta {
-    background: var(--neon-pink);
-    color: white;
-    font-size: 1.5rem;
-    font-weight: 800;
-    padding: 15px 40px;
-    border: none;
-    border-radius: 50px; /* Redondo estilo ticket */
-    cursor: pointer;
-    box-shadow: 0 0 20px var(--neon-pink);
-    transition: all 0.3s;
+  background: var(--neon-pink); /* Fondo Fucsia */
+  color: white;
+  font-size: 1.6rem;
+  font-weight: 900;
+  padding: 15px 50px;
+  border: none;
+  border-radius: 50px; /* Bordes redondos tipo píldora */
+  cursor: pointer;
+  box-shadow: 0 0 25px var(--neon-pink); /* Resplandor rosa inicial */
+  transition: all 0.3s ease;
 }
 
 .btn-cta:hover {
-    background: #d900ae;
-    transform: translateY(-5px);
-    box-shadow: 0 0 40px var(--neon-pink);
+  background: #ff009d; /* Un poco más oscuro al hover */
+  /* Se mueve hacia arriba y aumenta el resplandor */
+  transform: translateY(-5px) scale(1.05);
+  box-shadow: 0 0 50px var(--neon-pink);
 }
 
-/* IMÁGENES LATERALES */
+/* =========================================
+   5. IMÁGENES LATERALES (EL PÚBLICO)
+   ========================================= */
+
+/* Columna contenedora */
 .side-column {
-    height: 80vh;
-    justify-content: center;
-    opacity: 0.6; /* Un poco apagadas por defecto */
-    transition: opacity 0.3s;
+  height: auto;
+  justify-content: center;
+  opacity: 0.7; /* Un poco transparentes por defecto */
+  transition: opacity 0.3s;
 }
 
 .side-column:hover {
-    opacity: 1; /* Se encienden al pasar el mouse */
+  opacity: 1; /* Se vuelven totalmente visibles al pasar el mouse */
 }
 
+/* El marco de la foto (tipo Polaroid oscura) */
 .img-frame {
-    border: 2px solid #333;
-    padding: 5px;
-    background: #1e1e1e;
-    transform: rotate(-3deg);
-    transition: transform 0.3s;
+  border: 3px solid #333;
+  padding: 5px;
+  background: #1e1e1e;
+  transition: transform 0.3s ease;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+  width: 100%;
+  max-width: 220px; /* Ancho máximo controlado */
 }
 
-.img-frame:nth-child(even) {
-    transform: rotate(3deg);
+/* Inclinación aleatoria para efecto desordenado */
+.tilt-left {
+  transform: rotate(-5deg);
 }
 
+.tilt-right {
+  transform: rotate(5deg);
+}
+
+/* Efecto al pasar el mouse sobre una foto lateral */
 .img-frame:hover {
-    transform: rotate(0deg) scale(1.1);
-    border-color: var(--neon-blue);
-    z-index: 5;
+  transform: rotate(0deg) scale(1.1); /* Se endereza y crece */
+  border-color: var(--neon-blue); /* El borde se pone azul neón */
+  z-index: 5; /* Se pone por encima de las otras */
 }
 
+/* La imagen de la foto lateral */
 .side-img {
-    width: 100%;
-    height: 200px;
-    object-fit: cover;
-    filter: grayscale(100%); /* Blanco y negro */
-    transition: filter 0.3s;
+  width: 100%;
+  height: 220px; /* Altura fija para uniformidad */
+  object-fit: cover; /* Recorta la imagen para llenar el cuadro */
+  filter: grayscale(100%); /* Efecto Blanco y Negro */
+  transition: filter 0.3s ease;
 }
 
+/* Al hacer hover en el marco, la foto recupera el color */
 .img-frame:hover .side-img {
-    filter: grayscale(0%); /* Color al hover */
+  filter: grayscale(0%);
 }
 
-/* CARDS DE SERVICIOS */
+/* =========================================
+   6. TARJETAS DE SERVICIOS (SETLIST)
+   ========================================= */
+
 .service-card {
-    background: var(--bg-card);
-    padding: 2rem;
-    border-radius: 10px;
-    border-top: 4px solid #333;
-    transition: all 0.3s;
+  background: rgba(30, 30, 30, 0.4); /* Fondo semitransparente */
+  padding: 2.5rem 1.5rem;
+  border-radius: 12px;
+  border: 1px solid #333;
+  transition: all 0.3s ease;
+  text-align: center;
+  height: 100%;
 }
 
+/* Efecto al pasar el mouse sobre el servicio */
 .service-card:hover {
-    background: #252525;
-    border-top-color: var(--neon-blue);
-    transform: translateY(-10px);
+  background: #1e1e1e; /* Fondo se vuelve sólido */
+  border-color: var(--neon-blue); /* Borde azul */
+  transform: translateY(-8px); /* Flota hacia arriba */
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.1); /* Resplandor suave */
 }
 
 .service-card .icon {
-    font-size: 3rem;
-    margin-bottom: 1rem;
+  font-size: 3.5rem;
+  margin-bottom: 1.5rem;
+  filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.2));
 }
 
 .service-card h4 {
-    color: white;
-    font-weight: 700;
+  color: white;
+  font-weight: 800;
+  margin-bottom: 10px;
+  letter-spacing: 1px;
 }
 
 .service-card p {
-    color: var(--text-muted);
+  color: var(--text-muted); /* Gris suave para no cansar la vista */
+  font-size: 0.95rem;
 }

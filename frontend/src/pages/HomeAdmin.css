@@ -1,0 +1,169 @@
+/* =========================================
+   1. CONTENEDOR PRINCIPAL (LAYOUT)
+   ========================================= */
+
+.admin-dashboard-container {
+  max-width: 1200px; /* Ancho máximo para pantallas grandes */
+  margin: 0 auto; /* Centrado automático */
+  padding: 3rem 1.5rem; /* Espacio interno */
+  
+  /* CLAVE: Esto asegura que el footer siempre quede abajo, 
+     incluso si hay poco contenido */
+  min-height: 85vh; 
+  
+  /* Flexbox para alinear todo el contenido al centro verticalmente */
+  display: flex;
+  flex-direction: column;
+  align-items: center; 
+  
+  /* Fondo transparente para dejar ver el negro global */
+  background-color: transparent !important; 
+}
+
+/* =========================================
+   2. CABECERA Y TEXTOS
+   ========================================= */
+
+.admin-header {
+  margin-bottom: 4rem; /* Separación con la grilla de botones */
+  text-align: center;
+}
+
+/* Subtítulo pequeño: "PANEL DE CONTROL" */
+.admin-subtitle {
+  color: #aaaaaa !important; /* Gris claro visible */
+  letter-spacing: 4px; /* Espacio entre letras elegante */
+  font-weight: 700;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  font-size: 0.9rem;
+}
+
+/* Título principal: "HOLA, [NOMBRE]" */
+.admin-welcome-title {
+  font-weight: 900;
+  text-transform: uppercase;
+  color: white;
+  font-size: 3.5rem; /* Letra grande */
+  margin: 0;
+  /* Sombra suave blanca para dar volumen */
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.15);
+}
+
+/* Estilo para el nombre del usuario (Azul Neón) */
+.text-neon-blue {
+  color: #00d4ff;
+  text-shadow: 0 0 15px rgba(0, 212, 255, 0.6);
+}
+
+/* Texto de instrucción inferior */
+.admin-instruction {
+  color: #e0e0e0 !important; /* Blanco suave */
+  font-size: 1.2rem;
+  margin-top: 15px;
+  font-weight: 500;
+}
+
+/* =========================================
+   3. GRILLA DE NAVEGACIÓN (MENÚ)
+   ========================================= */
+
+.admin-grid-menu {
+  display: grid;
+  /* Responsivo: Crea columnas automáticamente según el espacio.
+     Mínimo 300px de ancho por tarjeta. */
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
+  gap: 2rem; /* Espacio entre tarjetas */
+  width: 100%;
+  margin-bottom: 3rem;
+}
+
+/* =========================================
+   4. TARJETAS DE ACCIÓN (BOTONES GRANDES)
+   ========================================= */
+
+.admin-card-btn {
+  background: rgba(30, 30, 30, 0.6); /* Fondo semitransparente */
+  border: 1px solid #444; /* Borde sutil */
+  border-radius: 15px;
+  padding: 2.5rem 2rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease; /* Suaviza el hover */
+}
+
+/* Efecto al pasar el mouse (Hover) */
+.admin-card-btn:hover {
+  background: #1e1e1e; /* Se oscurece */
+  border-color: #00d4ff; /* El borde se pone azul neón */
+  transform: translateY(-8px); /* Flota hacia arriba */
+  /* Resplandor azul abajo */
+  box-shadow: 0 10px 30px rgba(0, 212, 255, 0.15); 
+}
+
+/* Iconos dentro de las tarjetas (Emojis) */
+.icon-large {
+  font-size: 3.5rem;
+  margin-bottom: 15px;
+  /* Sombra para que el emoji destaque */
+  filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.2));
+}
+
+.admin-card-btn h3 {
+  margin-top: 10px;
+  color: white;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.admin-card-btn p {
+  color: #ccc; /* Texto gris claro */
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+/* =========================================
+   5. BOTÓN DE SALIDA
+   ========================================= */
+
+.btn-logout-rock {
+  background: transparent;
+  border: 2px solid #ff4d4d; /* Borde Rojo */
+  color: #ff4d4d; /* Texto Rojo */
+  padding: 12px 40px;
+  font-weight: 800;
+  text-transform: uppercase;
+  border-radius: 50px; /* Redondo */
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.btn-logout-rock:hover {
+  background: #ff4d4d; /* Se rellena de rojo */
+  color: white;
+  /* Resplandor rojo intenso */
+  box-shadow: 0 0 20px rgba(255, 77, 77, 0.5); 
+}
+
+/* =========================================
+   6. ANIMACIONES (Opcional pero recomendado)
+   ========================================= */
+/* Estas clases las usamos en el JSX (fade-in-down, fade-in-up) */
+
+.fade-in-down {
+  animation: fadeInDown 0.8s ease-out;
+}
+
+.fade-in-up {
+  animation: fadeInUp 0.8s ease-out 0.2s backwards; /* Retraso de 0.2s */
+}
+
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}

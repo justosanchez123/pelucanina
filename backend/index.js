@@ -1,4 +1,4 @@
-// index.js
+// backend/index.js
 const express = require('express');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
@@ -23,6 +23,7 @@ const rutas = {
   duenos: require('./rutas/duenos'),
   mascotas: require('./rutas/mascotas'),
   turnos: require('./rutas/turnos'),
+  fotos: require('./rutas/fotos'), // 👈 NUEVO: Importamos la ruta de fotos
 };
 
 // Montaje de rutas
@@ -32,6 +33,7 @@ app.use('/api/usuarios', rutas.usuarios);
 app.use('/api/duenos', rutas.duenos);
 app.use('/api/mascotas', rutas.mascotas);
 app.use('/api/turnos', rutas.turnos);
+app.use('/api/fotos', rutas.fotos); // 👈 NUEVO: Habilitamos el endpoint /api/fotos
 
 // Middleware para rutas no encontradas
 app.use((req, res) => {

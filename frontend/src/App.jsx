@@ -19,6 +19,9 @@ import TurnosAdmin from "./pages/TurnosAdmin";
 import RutasProtegidas from "./routes/RutasProtegidas";
 import DuenosList from "./pages/DuenosList";
 
+import Galeria from "./pages/Galeria";          // <--- NUEVO
+import GaleriaAdmin from "./pages/GaleriaAdmin";
+
 function App() {
   const { usuario } = useAuth();
 
@@ -72,6 +75,14 @@ function App() {
           path="/agendar"
           element={usuario ? <AgendarTurno /> : <Navigate to="/login" replace />}
         />
+        {/* Ruta Pública */}
+        <Route path="/galeria" element={<Galeria />} /> {/* <--- NUEVA RUTA */}
+
+        {/* Ruta Admin Protegida */}
+        <Route path="/admin" element={<RutasProtegidas rol="adminPrincipal" />}>
+          {/* ... otras rutas de admin ... */}
+          <Route path="galeria" element={<GaleriaAdmin />} /> {/* <--- NUEVA RUTA ADMIN */}
+        </Route>
       </Routes>
       <Footer />
     </Router>

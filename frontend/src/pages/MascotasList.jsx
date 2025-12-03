@@ -1,23 +1,20 @@
 import { useEffect, useState } from "react";
 import { Table, Button, Modal, Form, InputGroup } from "react-bootstrap";
 import api from "../api/axios";
-import "./DuenosList.css";
+import Swal from "sweetalert2";
+import "./DuenosList.css"; 
 
 const MascotasList = () => {
   const [mascotas, setMascotas] = useState([]);
   const [duenos, setDuenos] = useState([]);
   const [busqueda, setBusqueda] = useState("");
+  
   const [showModal, setShowModal] = useState(false);
   const [editando, setEditando] = useState(null);
+  
   const [formData, setFormData] = useState({
-    nombre: "",
-    edad: "",
-    raza: "",
-    peso: "",
-    enfermedades: "",
-    observaciones: "",
-    dueno: "",
-    duenoModel: "Dueno",
+    nombre: "", edad: "", raza: "", peso: "", enfermedades: "",
+    observaciones: "", dueno: "", duenoModel: "Dueno",
   });
 
   const normalizarCampos = (data) => {
@@ -31,252 +28,167 @@ const MascotasList = () => {
     return result;
   };
 
-  const fetchMascotas = async () => {
+  const cargarDatos = async () => {
     try {
-      const res = await api.get("/mascotas");
-      setMascotas(res.data);
-    } catch (error) {
-      console.error("❌ Error al obtener mascotas:", error);
-    }
-  };
-
-  const fetchDuenos = async () => {
-    try {
-      const [resDuenos, resUsuarios] = await Promise.all([
-        api.get("/duenos"),
-        api.get("/usuarios"),
+      const [resM, resD, resU] = await Promise.all([
+          api.get("/mascotas"),
+          api.get("/duenos"),
+          api.get("/usuarios")
       ]);
-
+      
+      setMascotas(Array.isArray(resM.data) ? resM.data : []);
+      
       const allDuenos = [
-        ...resDuenos.data.map((d) => ({ ...d, duenoModel: "Dueno" })),
-        ...resUsuarios.data.map((u) => ({ ...u, duenoModel: "Usuario" })),
+        ...resD.data.map(d => ({ ...d, duenoModel: "Dueno" })),
+        ...resU.data.map(u => ({ ...u, duenoModel: "Usuario" }))
       ];
-
       setDuenos(allDuenos);
-    } catch (error) {
-      console.error("❌ Error al obtener dueños/usuarios:", error);
+    } catch (error) { 
+        console.error(error); 
     }
   };
 
-  useEffect(() => {
-    fetchMascotas();
-    fetchDuenos();
-  }, []);
-
-  const handleEditar = (mascota) => {
-    setEditando(mascota);
-    setFormData({
-      nombre: mascota.nombre,
-      edad: mascota.edad,
-      raza: mascota.raza,
-      peso: mascota.peso,
-      enfermedades: mascota.enfermedades,
-      observaciones: mascota.observaciones,
-      dueno: mascota.dueno?._id || mascota.dueno || "",
-      duenoModel: mascota.duenoModel || "Dueno",
-    });
-    setShowModal(true);
-  };
-
-  const handleEliminar = async (id) => {
-    if (!window.confirm("¿Seguro que deseas eliminar esta mascota?")) return;
-    try {
-      await api.delete(`/mascotas/${id}`);
-      fetchMascotas();
-    } catch (error) {
-      console.error("❌ Error al eliminar mascota:", error);
-    }
-  };
+  useEffect(() => { cargarDatos(); }, []);
 
   const handleGuardar = async () => {
     try {
+      if (!formData.nombre || !formData.dueno) {
+          return Swal.fire({title:'Faltan datos', text:'Nombre y Dueño son obligatorios', icon:'warning', background:'#1e1e1e', color:'#fff'});
+      }
+
       const datos = normalizarCampos(formData);
-      const payload = {
-        ...datos,
-        dueno: formData.dueno,
-        duenoModel: formData.duenoModel,
-      };
+      // Enviamos 'tipoDueno' al backend, que es lo que espera el modelo
+      const payload = { ...datos, dueno: formData.dueno, tipoDueno: formData.duenoModel };
 
       if (editando) {
         await api.put(`/mascotas/${editando._id}`, payload);
+        Swal.fire({title:'¡Actualizado!', icon:'success', background:'#1e1e1e', color:'#fff'});
       } else {
         await api.post("/mascotas", payload);
+        Swal.fire({title:'¡Creado!', icon:'success', background:'#1e1e1e', color:'#fff'});
       }
 
       setShowModal(false);
-      fetchMascotas();
-    } catch (error) {
-      console.error("❌ Error al guardar mascota:", error);
+      cargarDatos();
+    } catch (error) { 
+        Swal.fire({title:'Error', text:'No se pudo guardar', icon:'error', background:'#1e1e1e', color:'#fff'}); 
     }
   };
 
-  const mascotasFiltradas = mascotas.filter((m) => {
-    const duenoNombre = m.dueno
-      ? `${m.dueno.nombres || ""} ${m.dueno.apellidos || ""}`.toLowerCase()
-      : "";
-    return (
-      m.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
-      (m.raza && m.raza.toLowerCase().includes(busqueda.toLowerCase())) ||
-      duenoNombre.includes(busqueda.toLowerCase())
-    );
-  });
+  const handleEliminar = async (id) => {
+    const r = await Swal.fire({
+        title:'¿Eliminar?', text:'Se borrará la ficha.', icon:'warning', 
+        showCancelButton:true, confirmButtonColor:'#d33', confirmButtonText:'Sí', background:'#1e1e1e', color:'#fff'
+    });
+    
+    if(r.isConfirmed) {
+        try {
+            await api.delete(`/mascotas/${id}`);
+            cargarDatos();
+            Swal.fire({title:'Eliminado', icon:'success', background:'#1e1e1e', color:'#fff'});
+        } catch (error) {
+            Swal.fire({title:'Error', icon:'error', background:'#1e1e1e', color:'#fff'});
+        }
+    }
+  };
+
+  const handleAbrir = (m = null) => {
+      if(m) { 
+          setEditando(m); 
+          setFormData({ 
+              nombre: m.nombre, edad: m.edad, raza: m.raza, peso: m.peso, 
+              enfermedades: m.enfermedades, observaciones: m.observaciones, 
+              // Aquí corregimos para leer 'tipoDueno' de la mascota que viene de la BD
+              dueno: m.dueno?._id || m.dueno, duenoModel: m.tipoDueno || "Dueno" 
+          }); 
+      } else { 
+          setEditando(null); 
+          setFormData({ 
+              nombre: "", edad: "", raza: "", peso: "", 
+              enfermedades: "", observaciones: "", dueno: "", duenoModel: "Dueno" 
+          }); 
+      }
+      setShowModal(true);
+  };
+
+  const filtradas = mascotas.filter(m => 
+      m.nombre.toLowerCase().includes(busqueda.toLowerCase()) || 
+      m.raza.toLowerCase().includes(busqueda.toLowerCase()) ||
+      (m.dueno?.nombres || "").toLowerCase().includes(busqueda.toLowerCase())
+  );
 
   return (
-    <div className="container">
-      <h2>Mascotas (Administración)</h2>
+    <div className="admin-container">
+      <h2 className="admin-title">GESTIÓN DE MASCOTAS</h2>
+      
+      <div className="d-flex justify-content-between mb-4 gap-3">
+          <InputGroup className="rock-input-group" style={{maxWidth: '500px'}}>
+            <InputGroup.Text style={{background: '#2c2c2c', border: '1px solid #444', color:'#00d4ff'}}>🔍</InputGroup.Text>
+            <Form.Control placeholder="Buscar por nombre, raza o dueño..." value={busqueda} onChange={(e) => setBusqueda(e.target.value)} />
+          </InputGroup>
+          
+          <Button className="btn-neon" onClick={() => handleAbrir()}>+ Nueva Mascota</Button>
+      </div>
 
-      <InputGroup className="mb-3">
-        <Form.Control
-          placeholder="Buscar por nombre, raza o dueño"
-          value={busqueda}
-          onChange={(e) => setBusqueda(e.target.value)}
-        />
-      </InputGroup>
+      <div className="table-responsive">
+        <Table hover className="table-rock">
+            <thead>
+                <tr><th>Mascota</th><th>Raza / Edad</th><th>Salud</th><th>Dueño</th><th>Acciones</th></tr>
+            </thead>
+            <tbody>
+                {filtradas.length > 0 ? (
+                    filtradas.map(m => (
+                        <tr key={m._id}>
+                            <td><div className="fw-bold text-white fs-5">{m.nombre}</div></td>
+                            <td><div>{m.raza}</div><div className="small text-muted">{m.edad} años</div></td>
+                            <td>{m.enfermedades}</td>
+                            <td>
+                                <div>{m.dueno?.nombres} {m.dueno?.apellidos}</div>
+                                {/* CAMBIO CLAVE AQUÍ: Usamos m.tipoDueno */}
+                                {m.tipoDueno && (
+                                    <span className={m.tipoDueno === 'Usuario' ? 'badge-user' : 'badge-dueno'}>
+                                        {m.tipoDueno}
+                                    </span>
+                                )}
+                            </td>
+                            <td>
+                                <Button size="sm" className="btn-icon" onClick={() => handleAbrir(m)}>✏️</Button>
+                                <Button size="sm" className="btn-icon danger" onClick={() => handleEliminar(m._id)}>🗑️</Button>
+                            </td>
+                        </tr>
+                    ))
+                ) : (
+                    <tr><td colSpan="5" className="text-center py-4 text-muted">No se encontraron mascotas</td></tr>
+                )}
+            </tbody>
+        </Table>
+      </div>
 
-      <Button
-        onClick={() => {
-          setEditando(null);
-          setFormData({
-            nombre: "",
-            edad: "",
-            raza: "",
-            peso: "",
-            enfermedades: "",
-            observaciones: "",
-            dueno: "",
-            duenoModel: "Dueno",
-          });
-          setShowModal(true);
-        }}
-      >
-        ➕ Agregar Mascota
-      </Button>
-
-      <Table striped bordered hover className="mt-3">
-        <thead>
-          <tr>
-            <th>Nombre</th>
-            <th>Edad</th>
-            <th>Raza</th>
-            <th>Peso</th>
-            <th>Enfermedades</th>
-            <th>Observaciones</th>
-            <th>Dueño/Usuario</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          {mascotasFiltradas.map((m) => (
-            <tr key={m._id}>
-              <td>{m.nombre}</td>
-              <td>{m.edad}</td>
-              <td>{m.raza}</td>
-              <td>{m.peso}</td>
-              <td>{m.enfermedades}</td>
-              <td>{m.observaciones}</td>
-              <td>
-                {m.dueno
-                  ? `${m.dueno.nombres || ""} ${m.dueno.apellidos || ""} (${m.duenoModel})`
-                  : "Desconocido"}
-              </td>
-              <td>
-                <Button size="sm" onClick={() => handleEditar(m)}>
-                  ✏️
-                </Button>{" "}
-                <Button
-                  size="sm"
-                  variant="danger"
-                  onClick={() => handleEliminar(m._id)}
-                >
-                  🗑️
-                </Button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </Table>
-
-      {/* Modal */}
-      <Modal show={showModal} onHide={() => setShowModal(false)}>
-        <Modal.Header closeButton>
-          <Modal.Title>{editando ? "Editar Mascota" : "Agregar Mascota"}</Modal.Title>
-        </Modal.Header>
+      <Modal show={showModal} onHide={() => setShowModal(false)} centered backdrop="static">
+        <Modal.Header closeButton><Modal.Title>{editando ? "Editar Ficha" : "Registrar Mascota"}</Modal.Title></Modal.Header>
         <Modal.Body>
-          <Form>
-            <Form.Group className="mb-2">
-              <Form.Label>Nombre</Form.Label>
-              <Form.Control
-                value={formData.nombre}
-                onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
-              />
-            </Form.Group>
-
-            <Form.Group className="mb-2">
-              <Form.Label>Edad</Form.Label>
-              <Form.Control
-                placeholder="Desconocido"
-                value={formData.edad}
-                onChange={(e) => setFormData({ ...formData, edad: e.target.value })}
-              />
-            </Form.Group>
-
-            <Form.Group className="mb-2">
-              <Form.Label>Raza</Form.Label>
-              <Form.Control
-                placeholder="Desconocido"
-                value={formData.raza}
-                onChange={(e) => setFormData({ ...formData, raza: e.target.value })}
-              />
-            </Form.Group>
-
-            <Form.Group className="mb-2">
-              <Form.Label>Peso</Form.Label>
-              <Form.Control
-                placeholder="Desconocido"
-                value={formData.peso}
-                onChange={(e) => setFormData({ ...formData, peso: e.target.value })}
-              />
-            </Form.Group>
-
-            <Form.Group className="mb-2">
-              <Form.Label>Enfermedades</Form.Label>
-              <Form.Control
-                placeholder="Desconocido"
-                value={formData.enfermedades}
-                onChange={(e) => setFormData({ ...formData, enfermedades: e.target.value })}
-              />
-            </Form.Group>
-
-            <Form.Group className="mb-2">
-              <Form.Label>Observaciones</Form.Label>
-              <Form.Control
-                placeholder="Desconocido"
-                value={formData.observaciones}
-                onChange={(e) => setFormData({ ...formData, observaciones: e.target.value })}
-              />
-            </Form.Group>
-
-            <Form.Group>
-              <Form.Label>Dueño/Usuario</Form.Label>
-              <Form.Select
-                value={formData.dueno + "|" + formData.duenoModel}
-                onChange={(e) => {
-                  const [id, tipo] = e.target.value.split("|");
-                  setFormData({ ...formData, dueno: id, duenoModel: tipo });
-                }}
-              >
-                <option value="">Seleccionar...</option>
-                {duenos.map((d) => (
-                  <option key={d._id + "_" + d.duenoModel} value={d._id + "|" + d.duenoModel}>
-                    {d.nombres} {d.apellidos} ({d.duenoModel})
-                  </option>
-                ))}
-              </Form.Select>
-            </Form.Group>
-          </Form>
+            <Form>
+                <Form.Group className="mb-3">
+                    <Form.Label>Dueño *</Form.Label>
+                    <Form.Select value={formData.dueno + "|" + formData.duenoModel} onChange={(e) => { const [id, tipo] = e.target.value.split("|"); setFormData({ ...formData, dueno: id, duenoModel: tipo }); }}>
+                        <option value="">-- Seleccionar --</option>
+                        {duenos.map(d => <option key={d._id + d.duenoModel} value={d._id + "|" + d.duenoModel}>{d.nombres} {d.apellidos} ({d.email})</option>)}
+                    </Form.Select>
+                </Form.Group>
+                <div className="row">
+                    <div className="col-6 mb-3"><Form.Label>Nombre *</Form.Label><Form.Control value={formData.nombre} onChange={(e)=>setFormData({...formData, nombre:e.target.value})} /></div>
+                    <div className="col-6 mb-3"><Form.Label>Raza</Form.Label><Form.Control value={formData.raza} onChange={(e)=>setFormData({...formData, raza:e.target.value})} /></div>
+                </div>
+                <div className="row">
+                    <div className="col-6 mb-3"><Form.Label>Edad</Form.Label><Form.Control value={formData.edad} onChange={(e)=>setFormData({...formData, edad:e.target.value})} /></div>
+                    <div className="col-6 mb-3"><Form.Label>Peso</Form.Label><Form.Control value={formData.peso} onChange={(e)=>setFormData({...formData, peso:e.target.value})} /></div>
+                </div>
+                <Form.Group className="mb-3"><Form.Label>Enfermedades</Form.Label><Form.Control value={formData.enfermedades} onChange={(e)=>setFormData({...formData, enfermedades:e.target.value})} /></Form.Group>
+            </Form>
         </Modal.Body>
         <Modal.Footer>
-          <Button onClick={handleGuardar}>💾 Guardar</Button>
+            <Button variant="secondary" onClick={() => setShowModal(false)}>Cancelar</Button>
+            <Button className="btn-neon" onClick={handleGuardar}>Guardar</Button>
         </Modal.Footer>
       </Modal>
     </div>

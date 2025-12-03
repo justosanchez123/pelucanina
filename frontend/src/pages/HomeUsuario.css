@@ -1,34 +1,32 @@
 /* src/pages/HomeUsuario.css */
 
 /* ==============================================
-   CONTENEDOR PRINCIPAL
+   1. CONTENEDOR PRINCIPAL (LAYOUT)
    ============================================== */
 .user-container {
-  /* 1. Comportamiento de contenedor (centrado) */
   width: 100%;
-  max-width: 1200px; /* Ancho máximo estándar */
-  margin-right: auto;
-  margin-left: auto;
-  padding: 3rem 1.5rem; /* Espaciado interno */
-
-  /* 2. Forzar fondo transparente para ver el negro global */
+  max-width: 1200px;
+  margin: 0 auto; /* Centrado */
+  padding: 3rem 1.5rem;
+  
+  /* CLAVE: Forzar fondo transparente para ver el negro global */
   background-color: transparent !important; 
   background: none !important;
   box-shadow: none !important;
   border: none !important;
   
-  /* 3. Asegurar texto blanco */
   color: white;
-  min-height: 85vh; 
+  min-height: 85vh; /* Empuja el footer hacia abajo */
 }
 
 /* ==============================================
-   TIPOGRAFÍA ROCKERA
+   2. TÍTULOS Y TIPOGRAFÍA
    ============================================== */
 .title-rock {
   font-weight: 900;
   text-transform: uppercase;
   color: white;
+  /* Sombra suave blanca */
   text-shadow: 0 0 15px rgba(255, 255, 255, 0.15);
   margin-bottom: 0;
 }
@@ -44,24 +42,25 @@
 }
 
 /* ==============================================
-   TARJETAS DE MASCOTAS (Estilo Ticket)
+   3. TARJETAS DE MASCOTAS (ESTILO TICKET)
    ============================================== */
 .pet-card {
-  background-color: #1e1e1e; /* Gris oscuro */
+  background-color: #1e1e1e !important; /* Fondo Gris Oscuro */
   border: 1px solid #333;
-  border-left: 5px solid var(--neon-pink, #ff00cc); /* Borde rosa neón */
-  border-radius: 8px;
-  padding: 20px;
+  border-left: 5px solid var(--neon-pink, #ff00cc); /* Borde lateral Rosa */
+  border-radius: 12px;
+  padding: 25px;
   margin-bottom: 20px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-  transition: transform 0.3s, box-shadow 0.3s;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.5);
   color: white;
   position: relative;
+  height: 100%; /* Altura igualada */
+  transition: transform 0.3s, box-shadow 0.3s;
 }
 
 .pet-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 0 20px rgba(255, 0, 204, 0.2); /* Resplandor rosa */
+  box-shadow: 0 0 20px rgba(255, 0, 204, 0.2); /* Resplandor Rosa */
   border-color: #555;
 }
 
@@ -70,10 +69,13 @@
   font-weight: 800;
   color: var(--neon-blue, #00d4ff);
   text-transform: uppercase;
+  margin-bottom: 5px;
 }
 
 .pet-info {
-  line-height: 1.6;
+  line-height: 1.8;
+  font-size: 0.95rem;
+  margin-bottom: 1.5rem;
 }
 
 .pet-info strong {
@@ -81,153 +83,148 @@
 }
 
 /* ==============================================
-   BOTONES
+   4. BOTONES DE ACCIÓN
    ============================================== */
 
-/* Botones pequeños de acción (Editar/Borrar) */
+/* Botones pequeños (Editar Lápiz / Eliminar Basura) */
 .action-btn {
-  background: transparent;
+  background: #2c2c2c;
   border: 1px solid #555;
-  color: #aaa;
-  border-radius: 4px;
-  padding: 5px 10px;
+  color: #fff;
+  border-radius: 6px;
+  padding: 8px 12px;
   margin-right: 8px;
   transition: 0.3s;
+  cursor: pointer;
 }
 
 .action-btn:hover {
+  background: #444;
   border-color: white;
-  color: white;
-  background: rgba(255,255,255,0.1);
+  transform: scale(1.1);
 }
 
 .text-danger:hover {
+  background: rgba(255, 68, 68, 0.2);
   border-color: #ff4444;
-  color: #ff4444;
-  background: rgba(255, 68, 68, 0.1);
 }
 
-/* Botón Reservar (Píldora Azul) */
+/* Botón "TURNO" (Píldora Azul Sólida) */
 .btn-reservar-rock {
   background-color: var(--neon-blue, #00d4ff);
   color: black;
   font-weight: 800;
   border: none;
-  padding: 8px 20px;
+  padding: 10px 25px;
   border-radius: 30px;
   text-transform: uppercase;
-  font-size: 0.85rem;
-  box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
+  font-size: 0.9rem;
+  box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
   transition: 0.3s;
+  cursor: pointer;
 }
 
 .btn-reservar-rock:hover {
   background-color: white;
-  box-shadow: 0 0 20px var(--neon-blue, #00d4ff);
+  box-shadow: 0 0 25px var(--neon-blue, #00d4ff);
   transform: scale(1.05);
 }
 
-/* Botón Agregar Mascota (Contorno Neón) */
+/* Botón "+ AGREGAR MASCOTA" (Borde Brillante) */
 .btn-add-neon {
-  background: transparent;
-  border: 2px solid var(--neon-blue, #00d4ff);
-  color: var(--neon-blue, #00d4ff);
+  /* Fondo semitransparente para que sea visible siempre */
+  background: rgba(0, 212, 255, 0.15) !important;
+  border: 2px solid var(--neon-blue, #00d4ff) !important;
+  color: var(--neon-blue, #00d4ff) !important;
   font-weight: 800;
   padding: 10px 20px;
   text-transform: uppercase;
   border-radius: 5px;
-  transition: 0.3s;
+  transition: all 0.3s;
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(0, 212, 255, 0.1);
 }
 
 .btn-add-neon:hover {
-  background: var(--neon-blue, #00d4ff);
-  color: black;
-  box-shadow: 0 0 20px var(--neon-blue, #00d4ff);
+  background: var(--neon-blue, #00d4ff) !important;
+  color: black !important;
+  box-shadow: 0 0 25px var(--neon-blue, #00d4ff);
+  transform: translateY(-2px);
 }
 
 /* ==============================================
-   TARJETAS DE TURNOS
+   5. TARJETAS DE TURNOS AGENDADOS
    ============================================== */
 .turno-card-dark {
-  background-color: #1a1a1a;
+  background-color: #1e1e1e;
   border: 1px solid #333;
-  border-radius: 8px;
+  border-radius: 10px;
   margin-bottom: 15px;
   color: white;
   overflow: hidden;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
 }
 
 .turno-header {
   background-color: #252525;
-  padding: 10px 15px;
-  border-bottom: 1px solid #333;
+  padding: 12px 20px;
+  border-bottom: 1px solid #444;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
 .turno-date {
-  color: var(--neon-gold, #ffd700);
+  color: var(--neon-gold, #ffd700); /* Dorado */
   font-weight: bold;
   font-size: 1.1rem;
 }
 
 .turno-body {
-  padding: 15px;
+  padding: 20px;
+}
+
+/* Corrección de texto invisible en turnos */
+.turno-body .small.text-muted {
+  color: #aaaaaa !important; /* Gris claro visible */
+  font-style: italic;
 }
 
 /* ==============================================
-   MODAL Y FORMULARIOS (ARREGLO DE LEGIBILIDAD)
+   6. MODALES Y FORMULARIOS (DARK MODE)
    ============================================== */
-
-/* 1. Fondo del Modal OSCURO (para que no salga blanco) */
 .modal-content {
   background-color: #1e1e1e !important;
   border: 1px solid var(--neon-blue, #00d4ff) !important;
   color: white !important;
-  box-shadow: 0 0 30px rgba(0, 0, 0, 0.8) !important;
 }
 
-/* 2. Líneas de separación oscuras */
 .modal-header, .modal-footer {
   border-color: #333 !important;
 }
 
-/* 3. El botón de cerrar (X) en blanco */
+/* Botón cerrar (X) en blanco */
 .btn-close {
   filter: invert(1) grayscale(100%) brightness(200%);
 }
 
-/* 4. Títulos del modal */
-.modal-title {
-  font-weight: 800;
-  text-transform: uppercase;
-  color: var(--neon-blue, #00d4ff);
-}
-
-/* 5. Etiquetas de los inputs */
 .form-label {
   color: #ccc;
   font-weight: 600;
-  font-size: 0.9rem;
 }
 
-/* 6. INPUTS: Fondo oscuro y texto CLARO */
 .form-control {
   background-color: #2c2c2c !important;
   border: 1px solid #555 !important;
   color: white !important;
-  padding: 10px;
 }
 
-/* 7. TEXTO DE AYUDA (PLACEHOLDER): GRIS CLARO PARA QUE SE LEA */
+/* Placeholder visible */
 .form-control::placeholder {
   color: #aaaaaa !important;
   opacity: 1;
 }
 
-/* 8. Input al hacer click (Focus) */
 .form-control:focus {
   background-color: #333 !important;
   border-color: var(--neon-blue, #00d4ff) !important;

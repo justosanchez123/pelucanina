@@ -1,327 +1,171 @@
 import { useEffect, useState } from "react";
 import { Table, Button, Modal, Form, InputGroup } from "react-bootstrap";
 import api from "../api/axios";
-import "./DuenosList.css";
+import Swal from "sweetalert2";
+import "./DuenosList.css"; 
 
 const DuenosList = () => {
   const [duenos, setDuenos] = useState([]);
-  const [mascotas, setMascotas] = useState([]);
   const [busqueda, setBusqueda] = useState("");
-
+  
   const [showAgregarDueno, setShowAgregarDueno] = useState(false);
   const [showEditarDueno, setShowEditarDueno] = useState(false);
-  const [showAgregarMascota, setShowAgregarMascota] = useState(false);
-
-  const [nuevoDueno, setNuevoDueno] = useState({
-    nombres: "",
-    apellidos: "",
-    dni: "",
-    email: "",
-    telefono: "",
-    direccion: "",
-  });
   const [duenoEditar, setDuenoEditar] = useState(null);
-  const [duenoSeleccionado, setDuenoSeleccionado] = useState(null);
-
-  const [nuevaMascota, setNuevaMascota] = useState({
-    nombre: "",
-    edad: "",
-    raza: "",
-    peso: "",
-    enfermedades: "",
-    observaciones: "",
+  
+  const [nuevoDueno, setNuevoDueno] = useState({
+    nombres: "", apellidos: "", dni: "", email: "", telefono: "", direccion: "",
   });
-  const [mascotaEditar, setMascotaEditar] = useState(null);
 
-  // Cargar dueños y mascotas
   const cargarDuenos = async () => {
     try {
-      const resDuenos = await api.get("/duenos");
-      setDuenos(resDuenos.data);
-
-      const resMascotas = await api.get("/mascotas");
-      setMascotas(resMascotas.data);
+      const res = await api.get("/duenos");
+      const data = Array.isArray(res.data) ? res.data : [];
+      setDuenos(data);
     } catch (error) {
-      console.error("❌ Error al cargar datos: ", error);
+      console.error("Error:", error);
+      Swal.fire({title: 'Error', text: 'No se pudieron cargar los datos', icon: 'error', background: '#1e1e1e', color: '#fff'});
     }
   };
 
-  useEffect(() => {
-    cargarDuenos();
-  }, []);
+  useEffect(() => { cargarDuenos(); }, []);
 
-  const duenosFiltrados = duenos.filter(
-    (d) =>
-      d.nombres.toLowerCase().includes(busqueda.toLowerCase()) ||
-      d.apellidos.toLowerCase().includes(busqueda.toLowerCase()) ||
+  const duenosFiltrados = duenos.filter(d =>
+      (d.nombres || "").toLowerCase().includes(busqueda.toLowerCase()) ||
+      (d.apellidos || "").toLowerCase().includes(busqueda.toLowerCase()) ||
       (d.dni || "").includes(busqueda)
   );
 
-  // ---------- Dueños ----------
   const handleAgregarDueno = async () => {
-    try {
-      await api.post("/duenos", nuevoDueno);
-      setShowAgregarDueno(false);
-      setNuevoDueno({
-        nombres: "",
-        apellidos: "",
-        dni: "",
-        email: "",
-        telefono: "",
-        direccion: "",
-      });
-      cargarDuenos();
-    } catch (error) {
-      console.error("❌ Error al agregar dueño: ", error);
-    }
+      try {
+          if(!nuevoDueno.nombres || !nuevoDueno.email) return Swal.fire({title:'Faltan datos', icon:'warning', background:'#1e1e1e', color:'#fff'});
+          await api.post("/duenos", nuevoDueno);
+          Swal.fire({title:'¡Creado!', icon:'success', background:'#1e1e1e', color:'#fff'});
+          setShowAgregarDueno(false);
+          setNuevoDueno({nombres: "", apellidos: "", dni: "", email: "", telefono: "", direccion: ""});
+          cargarDuenos();
+      } catch (error) { Swal.fire({title:'Error', icon:'error', background:'#1e1e1e', color:'#fff'}); }
   };
 
   const handleEditarDueno = async () => {
-    try {
-      await api.put(`/duenos/${duenoEditar._id}`, duenoEditar);
-      setShowEditarDueno(false);
-      setDuenoEditar(null);
-      cargarDuenos();
-    } catch (error) {
-      console.error("❌ Error al editar dueño: ", error);
-    }
+      try {
+          await api.put(`/duenos/${duenoEditar._id}`, duenoEditar);
+          Swal.fire({title:'¡Actualizado!', icon:'success', background:'#1e1e1e', color:'#fff'});
+          setShowEditarDueno(false);
+          cargarDuenos();
+      } catch (error) { Swal.fire({title:'Error', icon:'error', background:'#1e1e1e', color:'#fff'}); }
   };
 
   const handleEliminarDueno = async (id) => {
-    if (!window.confirm("¿Seguro que deseas eliminar este dueño?")) return;
-    try {
-      await api.delete(`/duenos/${id}`);
-      cargarDuenos();
-    } catch (error) {
-      console.error("❌ Error al eliminar dueño: ", error);
-    }
-  };
-
-  // ---------- Mascotas ----------
-  const handleGuardarMascota = async () => {
-    try {
-      if (mascotaEditar) {
-        // Editar mascota existente
-        await api.put(`/mascotas/${mascotaEditar._id}`, nuevaMascota);
-      } else {
-        // Agregar nueva mascota
-        await api.post("/mascotas", {
-          ...nuevaMascota,
-          dueno: duenoSeleccionado._id,
-          duenoModel: "Dueno",
-        });
-      }
-
-      setShowAgregarMascota(false);
-      setNuevaMascota({
-        nombre: "",
-        edad: "",
-        raza: "",
-        peso: "",
-        enfermedades: "",
-        observaciones: "",
+      const result = await Swal.fire({
+          title: '¿Eliminar dueño?', text: "Se borrarán también sus mascotas y turnos.", icon: 'warning',
+          showCancelButton: true, confirmButtonColor: '#d33', cancelButtonColor: '#3085d6', confirmButtonText: 'Sí, eliminar', background: '#1e1e1e', color: '#fff'
       });
-      setMascotaEditar(null);
-      cargarDuenos();
-    } catch (error) {
-      console.error("❌ Error al guardar mascota: ", error);
-    }
+      if(result.isConfirmed) {
+          try {
+              await api.delete(`/duenos/${id}`);
+              cargarDuenos();
+              Swal.fire({title:'Eliminado', icon:'success', background:'#1e1e1e', color:'#fff'});
+          } catch (error) { Swal.fire({title:'Error', icon:'error', background:'#1e1e1e', color:'#fff'}); }
+      }
   };
 
   return (
-    <div className="container mt-5">
-      <h2>Dueños</h2>
-      <InputGroup className="mb-3">
-        <Form.Control
-          placeholder="Buscar por nombre, apellido o DNI"
-          value={busqueda}
-          onChange={(e) => setBusqueda(e.target.value)}
-        />
-      </InputGroup>
+    <div className="admin-container">
+      <h2 className="admin-title">GESTIÓN DE DUEÑOS</h2>
+      
+      <div className="d-flex justify-content-between mb-4 gap-3">
+          <InputGroup className="rock-input-group" style={{maxWidth: '500px'}}>
+            <InputGroup.Text style={{background: '#2c2c2c', border: '1px solid #444', color:'#00d4ff'}}>🔍</InputGroup.Text>
+            <Form.Control placeholder="Buscar por nombre, apellido o DNI..." value={busqueda} onChange={(e) => setBusqueda(e.target.value)} />
+          </InputGroup>
+          <Button className="btn-neon" onClick={() => setShowAgregarDueno(true)}>+ Nuevo Dueño</Button>
+      </div>
 
-      <Button className="mb-3" onClick={() => setShowAgregarDueno(true)}>
-        Agregar Dueño
-      </Button>
-
-      <Table striped bordered hover>
-        <thead>
-          <tr>
-            <th>Nombres</th>
-            <th>Apellidos</th>
-            <th>DNI</th>
-            <th>Email</th>
-            <th>Teléfono</th>
-            <th>Dirección</th>
-            <th>Mascotas</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          {[...duenosFiltrados]
-  .sort((a, b) => {
-    const apellidosA = a.apellidos.toLowerCase();
-    const apellidosB = b.apellidos.toLowerCase();
-    if (apellidosA < apellidosB) return -1;
-    if (apellidosA > apellidosB) return 1;
-
-    const nombresA = a.nombres.toLowerCase();
-    const nombresB = b.nombres.toLowerCase();
-    if (nombresA < nombresB) return -1;
-    if (nombresA > nombresB) return 1;
-    return 0;
-  })
-  .map((d) => (
-
-            <tr key={d._id}>
-              <td>{d.nombres}</td>
-              <td>{d.apellidos}</td>
-              <td>{d.dni || "-"}</td>
-              <td>{d.email || "-"}</td>
-              <td>{d.telefono || "-"}</td>
-              <td>{d.direccion || "-"}</td>
-              <td>{d.mascotas?.map((m) => m.nombre).join(", ")}</td>
-              <td>
-                <Button
-                  size="sm"
-                  variant="warning"
-                  onClick={() => {
-                    setDuenoEditar(d);
-                    setShowEditarDueno(true);
-                  }}
-                >
-                  Editar
-                </Button>{" "}
-                <Button
-                  size="sm"
-                  variant="danger"
-                  onClick={() => handleEliminarDueno(d._id)}
-                >
-                  Eliminar
-                </Button>{" "}
-                <Button
-                  size="sm"
-                  variant="primary"
-                  onClick={() => {
-                    setDuenoSeleccionado(d);
-                    setNuevaMascota({
-                      nombre: "",
-                      edad: "",
-                      raza: "",
-                      peso: "",
-                      enfermedades: "",
-                      observaciones: "",
-                    });
-                    setMascotaEditar(null);
-                    setShowAgregarMascota(true);
-                  }}
-                >
-                  Agregar Mascota
-                </Button>
-              </td>
+      <div className="table-responsive">
+        <Table hover className="table-rock">
+            <thead>
+            <tr>
+                <th>Cliente</th>
+                <th>DNI</th>
+                <th>Contacto</th>
+                <th>Dirección</th>
+                <th>Mascotas</th>
+                <th>Acciones</th>
             </tr>
-          ))}
-        </tbody>
-      </Table>
-
-      {/* Modal Agregar Dueño */}
-      <Modal show={showAgregarDueno} onHide={() => setShowAgregarDueno(false)}>
-        <Modal.Header closeButton>
-          <Modal.Title>Agregar Dueño</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          {["nombres", "apellidos", "dni", "email", "telefono", "direccion"].map(
-            (campo) => (
-              <Form.Group key={campo} className="mb-2">
-                <Form.Label>
-                  {campo.charAt(0).toUpperCase() + campo.slice(1)}
-                </Form.Label>
-                <Form.Control
-                  type="text"
-                  value={nuevoDueno[campo]}
-                  onChange={(e) =>
-                    setNuevoDueno({ ...nuevoDueno, [campo]: e.target.value })
-                  }
-                />
-              </Form.Group>
-            )
-          )}
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowAgregarDueno(false)}>
-            Cancelar
-          </Button>
-          <Button variant="primary" onClick={handleAgregarDueno}>
-            Guardar Dueño
-          </Button>
-        </Modal.Footer>
-      </Modal>
-
-      {/* Modal Editar Dueño */}
-      <Modal show={showEditarDueno} onHide={() => setShowEditarDueno(false)}>
-        <Modal.Header closeButton>
-          <Modal.Title>Editar Dueño</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          {duenoEditar &&
-            ["nombres", "apellidos", "dni", "email", "telefono", "direccion"].map(
-              (campo) => (
-                <Form.Group key={campo} className="mb-2">
-                  <Form.Label>
-                    {campo.charAt(0).toUpperCase() + campo.slice(1)}
-                  </Form.Label>
-                  <Form.Control
-                    type="text"
-                    value={duenoEditar[campo]}
-                    onChange={(e) =>
-                      setDuenoEditar({ ...duenoEditar, [campo]: e.target.value })
+            </thead>
+            <tbody>
+            {duenosFiltrados.map((d) => (
+                <tr key={d._id}>
+                <td>
+                    <div className="fw-bold text-white">{d.nombres} {d.apellidos}</div>
+                    {/* Badge para diferenciar usuarios online vs manuales */}
+                    {d.usuarioId ? <span className="badge-user">Usuario Online</span> : <span className="badge-dueno">Offline</span>}
+                </td>
+                <td>{d.dni || "-"}</td>
+                <td>
+                    <div className="small text-muted">{d.email}</div>
+                    <div>{d.telefono}</div>
+                </td>
+                <td>{d.direccion || "-"}</td>
+                <td>
+                    {d.mascotas?.length > 0 ? 
+                        d.mascotas.map(m => m.nombre).join(", ") : 
+                        <span className="text-muted small">Sin mascotas</span>
                     }
-                  />
-                </Form.Group>
-              )
-            )}
+                </td>
+                <td>
+                    <Button size="sm" className="btn-icon" onClick={() => { setDuenoEditar(d); setShowEditarDueno(true); }}>✏️</Button>
+                    <Button size="sm" className="btn-icon danger" onClick={() => handleEliminarDueno(d._id)}>🗑️</Button>
+                </td>
+                </tr>
+            ))}
+            </tbody>
+        </Table>
+      </div>
+
+      {/* --- MODAL AGREGAR --- */}
+      <Modal show={showAgregarDueno} onHide={() => setShowAgregarDueno(false)} centered backdrop="static">
+        <Modal.Header closeButton><Modal.Title>Agregar Cliente</Modal.Title></Modal.Header>
+        <Modal.Body>
+           <Form>
+             <div className="row">
+                 <div className="col-6 mb-3"><Form.Label>Nombres *</Form.Label><Form.Control value={nuevoDueno.nombres} onChange={(e)=>setNuevoDueno({...nuevoDueno, nombres:e.target.value})} /></div>
+                 <div className="col-6 mb-3"><Form.Label>Apellidos</Form.Label><Form.Control value={nuevoDueno.apellidos} onChange={(e)=>setNuevoDueno({...nuevoDueno, apellidos:e.target.value})} /></div>
+             </div>
+             <Form.Group className="mb-3"><Form.Label>Email *</Form.Label><Form.Control type="email" value={nuevoDueno.email} onChange={(e)=>setNuevoDueno({...nuevoDueno, email:e.target.value})} /></Form.Group>
+             <div className="row">
+                 <div className="col-6 mb-3"><Form.Label>DNI</Form.Label><Form.Control value={nuevoDueno.dni} onChange={(e)=>setNuevoDueno({...nuevoDueno, dni:e.target.value})} /></div>
+                 <div className="col-6 mb-3"><Form.Label>Teléfono *</Form.Label><Form.Control value={nuevoDueno.telefono} onChange={(e)=>setNuevoDueno({...nuevoDueno, telefono:e.target.value})} /></div>
+             </div>
+             <Form.Group className="mb-3"><Form.Label>Dirección *</Form.Label><Form.Control value={nuevoDueno.direccion} onChange={(e)=>setNuevoDueno({...nuevoDueno, direccion:e.target.value})} /></Form.Group>
+           </Form>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowEditarDueno(false)}>
-            Cancelar
-          </Button>
-          <Button variant="primary" onClick={handleEditarDueno}>
-            Guardar Cambios
-          </Button>
+           <Button variant="secondary" onClick={() => setShowAgregarDueno(false)}>Cancelar</Button>
+           <Button className="btn-neon" onClick={handleAgregarDueno}>Guardar</Button>
         </Modal.Footer>
       </Modal>
 
-      {/* Modal Agregar/Editar Mascota */}
-      <Modal show={showAgregarMascota} onHide={() => setShowAgregarMascota(false)}>
-        <Modal.Header closeButton>
-          <Modal.Title>
-            {mascotaEditar ? "Editar Mascota" : "Agregar Mascota"}
-          </Modal.Title>
-        </Modal.Header>
+      {/* --- MODAL EDITAR --- */}
+      <Modal show={showEditarDueno} onHide={() => setShowEditarDueno(false)} centered backdrop="static">
+        <Modal.Header closeButton><Modal.Title>Editar Cliente</Modal.Title></Modal.Header>
         <Modal.Body>
-          {["nombre", "edad", "raza", "peso", "enfermedades", "observaciones"].map(
-            (campo) => (
-              <Form.Group key={campo} className="mb-2">
-                <Form.Label>
-                  {campo.charAt(0).toUpperCase() + campo.slice(1)}
-                </Form.Label>
-                <Form.Control
-                  type="text"
-                  value={nuevaMascota[campo]}
-                  onChange={(e) =>
-                    setNuevaMascota({ ...nuevaMascota, [campo]: e.target.value })
-                  }
-                />
-              </Form.Group>
-            )
-          )}
+           <Form>
+             <div className="row">
+                 <div className="col-6 mb-3"><Form.Label>Nombres</Form.Label><Form.Control value={duenoEditar?.nombres || ''} onChange={(e)=>setDuenoEditar({...duenoEditar, nombres:e.target.value})} /></div>
+                 <div className="col-6 mb-3"><Form.Label>Apellidos</Form.Label><Form.Control value={duenoEditar?.apellidos || ''} onChange={(e)=>setDuenoEditar({...duenoEditar, apellidos:e.target.value})} /></div>
+             </div>
+             <Form.Group className="mb-3"><Form.Label>Email</Form.Label><Form.Control type="email" value={duenoEditar?.email || ''} onChange={(e)=>setDuenoEditar({...duenoEditar, email:e.target.value})} /></Form.Group>
+             <div className="row">
+                 <div className="col-6 mb-3"><Form.Label>DNI</Form.Label><Form.Control value={duenoEditar?.dni || ''} onChange={(e)=>setDuenoEditar({...duenoEditar, dni:e.target.value})} /></div>
+                 <div className="col-6 mb-3"><Form.Label>Teléfono</Form.Label><Form.Control value={duenoEditar?.telefono || ''} onChange={(e)=>setDuenoEditar({...duenoEditar, telefono:e.target.value})} /></div>
+             </div>
+             <Form.Group className="mb-3"><Form.Label>Dirección</Form.Label><Form.Control value={duenoEditar?.direccion || ''} onChange={(e)=>setDuenoEditar({...duenoEditar, direccion:e.target.value})} /></Form.Group>
+           </Form>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowAgregarMascota(false)}>
-            Cancelar
-          </Button>
-          <Button variant="primary" onClick={handleGuardarMascota}>
-            {mascotaEditar ? "Guardar Cambios" : "Agregar Mascota"}
-          </Button>
+           <Button variant="secondary" onClick={() => setShowEditarDueno(false)}>Cancelar</Button>
+           <Button className="btn-neon" onClick={handleEditarDueno}>Guardar Cambios</Button>
         </Modal.Footer>
       </Modal>
     </div>
