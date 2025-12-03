@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import api from "../api/axios";
 import { useAuth } from "../context/AuthContext";
+import { Modal, Button, Form } from "react-bootstrap"; // Usamos Bootstrap Modal
+import Swal from "sweetalert2"; // Usamos SweetAlert
 import "./TurnosAdmin.css";
 
 const TurnosAdmin = () => {
@@ -12,7 +14,7 @@ const TurnosAdmin = () => {
   const [listaMascotas, setListaMascotas] = useState([]); 
   
   const [fechaSeleccionada, setFechaSeleccionada] = useState(new Date().toISOString().split("T")[0]);
-  const [modalAbierto, setModalAbierto] = useState(false);
+  const [showModal, setShowModal] = useState(false);
   const [turnoEnProceso, setTurnoEnProceso] = useState({ hora: "", fecha: "" });
   
   const [duenoSeleccionado, setDuenoSeleccionado] = useState("");
@@ -52,13 +54,16 @@ const TurnosAdmin = () => {
     setMascotaSeleccionada("");
     setEsBloqueo(false);
     setMotivoBloqueo("");
-    setModalAbierto(true);
+    setShowModal(true); // Cambio a showModal
   };
 
-  const handleGuardar = async (e) => {
-    e.preventDefault();
-    if (esBloqueo && !motivoBloqueo.trim()) return alert("Escribe el motivo.");
-    if (!esBloqueo && (!duenoSeleccionado || !mascotaSeleccionada)) return alert("Selecciona cliente y mascota.");
+  const handleGuardar = async () => {
+    if (esBloqueo && !motivoBloqueo.trim()) {
+        return Swal.fire({title:'Falta motivo', icon:'warning', background:'#1e1e1e', color:'#fff'});
+    }
+    if (!esBloqueo && (!duenoSeleccionado || !mascotaSeleccionada)) {
+        return Swal.fire({title:'Faltan datos', text:'Selecciona cliente y mascota', icon:'warning', background:'#1e1e1e', color:'#fff'});
+    }
 
     try {
       const payload = {
@@ -71,21 +76,41 @@ const TurnosAdmin = () => {
       };
 
       await api.post("/turnos", payload);
-      alert(esBloqueo ? "Horario suspendido." : "Turno asignado.");
-      setModalAbierto(false);
+      
+      Swal.fire({
+        title: esBloqueo ? "Bloqueado" : "Asignado",
+        text: esBloqueo ? "Horario suspendido." : "Turno creado con éxito.",
+        icon: 'success',
+        background: '#1e1e1e', color: '#fff', confirmButtonColor: '#00d4ff'
+      });
+
+      setShowModal(false);
       cargarDatos(); 
     } catch (error) {
-      alert(error.response?.data?.mensaje || "Error al procesar");
+      Swal.fire({title:'Error', text: error.response?.data?.mensaje || "Error al procesar", icon:'error', background:'#1e1e1e', color:'#fff'});
     }
   };
 
   const handleCancelarTurno = async (id) => {
-    if (!window.confirm("¿Liberar este horario?")) return;
-    try {
-      await api.delete(`/turnos/${id}`);
-      cargarDatos();
-    } catch (error) {
-      alert("Error al cancelar");
+    const result = await Swal.fire({
+        title: '¿Liberar horario?',
+        text: "Se eliminará la reserva.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Sí, liberar',
+        background: '#1e1e1e', color: '#fff'
+    });
+
+    if (result.isConfirmed) {
+        try {
+            await api.delete(`/turnos/${id}`);
+            cargarDatos();
+            Swal.fire({title:'Liberado', icon:'success', background:'#1e1e1e', color:'#fff'});
+        } catch (error) {
+            Swal.fire({title:'Error', text:'No se pudo cancelar', icon:'error', background:'#1e1e1e', color:'#fff'});
+        }
     }
   };
 
@@ -111,12 +136,13 @@ const TurnosAdmin = () => {
 
   return (
     <div className="admin-turnos-container">
-      <h2 style={{ textAlign: "center", color: "#fff", marginBottom:'20px', textTransform:'uppercase', fontWeight:'800' }}>
-        📅 Panel de Turnos
+      {/* Título con Emoji Arreglado */}
+      <h2 className="admin-title-page">
+         <span className="emoji-calendario">📅</span> PANEL DE TURNOS
       </h2>
 
       <div className="filtros-container">
-        <label style={{ fontWeight: "bold", marginRight: "10px", color:'#ccc' }}>Día:</label>
+        <label>Día a visualizar:</label>
         <input
           type="date"
           className="input-fecha-admin"
@@ -125,8 +151,8 @@ const TurnosAdmin = () => {
         />
       </div>
 
-      <h3 style={{ borderBottom: "1px solid #444", paddingBottom: "10px", color:'#00d4ff' }}>
-        Vista Diaria: {new Date(fechaSeleccionada + 'T00:00:00').toLocaleDateString()}
+      <h3 className="vista-dia-title">
+        Vista: {new Date(fechaSeleccionada + 'T00:00:00').toLocaleDateString()}
       </h3>
 
       <div className="grilla-turnos">
@@ -162,18 +188,16 @@ const TurnosAdmin = () => {
         })}
       </div>
 
-      <h3 style={{ marginTop: "40px", borderBottom: "1px solid #444", paddingBottom: "10px", color:'#00d4ff' }}>
-        📑 Historial Completo
-      </h3>
+      <h3 className="historial-title">📑 Historial Completo</h3>
       
-      <div style={{ overflowX: "auto" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "10px", color: 'white' }}>
+      <div className="table-responsive">
+        <table className="table-rock-turnos">
           <thead>
-            <tr style={{ backgroundColor: "#222", color: "#00d4ff", borderBottom: '2px solid #00d4ff' }}>
-              <th style={{ padding: "15px" }}>Fecha</th>
-              <th style={{ padding: "15px" }}>Hora</th>
-              <th style={{ padding: "15px" }}>Detalle</th>
-              <th style={{ padding: "15px" }}>Acción</th>
+            <tr>
+              <th>Fecha</th>
+              <th>Hora</th>
+              <th>Detalle</th>
+              <th>Acción</th>
             </tr>
           </thead>
           <tbody>
@@ -186,32 +210,25 @@ const TurnosAdmin = () => {
               return (
                 <React.Fragment key={t._id}>
                   {mostrarSeparador && (
-                    <tr style={{ backgroundColor: "#333" }}>
-                      <td colSpan="4" style={{ padding: "8px 15px", fontWeight: "bold", color: "#ccc", textTransform: 'uppercase', fontSize:'0.9rem' }}>
-                        📅 {mesActual}
-                      </td>
+                    <tr className="separador-mes">
+                      <td colSpan="4">📅 {mesActual}</td>
                     </tr>
                   )}
-                  {/* FILAS OSCURAS */}
-                  <tr style={{ 
-                      borderBottom: "1px solid #333", 
-                      textAlign: "center", 
-                      backgroundColor: t.bloqueado ? '#2c1a1d' : '#1e1e1e' // Fondo oscuro rojizo o gris
-                  }}>
-                    <td style={{ padding: "12px" }}>{new Date(t.fecha).toLocaleDateString()}</td>
-                    <td style={{ padding: "12px", fontWeight: 'bold', color:'#00d4ff' }}>{t.hora}:00</td>
-                    <td style={{ padding: "12px", textAlign: 'left' }}>
-                       {t.bloqueado ? (
+                  <tr>
+                    <td>{new Date(t.fecha).toLocaleDateString()}</td>
+                    <td style={{color:'#00d4ff', fontWeight:'bold'}}>{t.hora}:00</td>
+                    <td style={{textAlign:'left'}}>
+                        {t.bloqueado ? (
                            <span style={{color: '#ff6b6b'}}>⛔ {t.nombreCliente || 'Suspendido'}</span>
-                       ) : (
+                        ) : (
                            <span>
                              <span style={{fontWeight:'bold', color:'white'}}>{t.mascota?.nombre}</span> 
                              <span style={{color:'#888'}}> - {t.dueno?.nombres} {t.dueno?.apellidos}</span>
                            </span>
-                       )}
+                        )}
                     </td>
-                    <td style={{ padding: "12px" }}>
-                      <button onClick={() => handleCancelarTurno(t._id)} style={{ background: "transparent", border: "1px solid #dc3545", color: "#dc3545", padding: "5px 15px", borderRadius: "20px", cursor: "pointer", fontSize:'0.85rem' }}>
+                    <td>
+                      <button onClick={() => handleCancelarTurno(t._id)} className="btn-liberar">
                         Liberar
                       </button>
                     </td>
@@ -223,54 +240,69 @@ const TurnosAdmin = () => {
         </table>
       </div>
 
-      {modalAbierto && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <h3 style={{marginTop: 0, color:'#00d4ff'}}>Gestionar Horario</h3>
-            <p className="mb-4 text-white-50">
-                {new Date(turnoEnProceso.fecha + 'T00:00:00').toLocaleDateString()} a las {turnoEnProceso.hora}:00 hs
+      {/* MODAL CON BOOTSTRAP (Mucho más limpio) */}
+      <Modal show={showModal} onHide={() => setShowModal(false)} centered backdrop="static">
+        <Modal.Header closeButton>
+            <Modal.Title className="text-white">Gestionar Horario: {turnoEnProceso.hora}:00 hs</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+            <p className="mb-3 text-white-50">
+                Fecha: {new Date(turnoEnProceso.fecha + 'T00:00:00').toLocaleDateString()}
             </p>
-            
-            <form onSubmit={handleGuardar}>
-              <div className="bloqueo-box">
-                  <input type="checkbox" id="chkBloqueo" checked={esBloqueo} onChange={(e) => setEsBloqueo(e.target.checked)} />
-                  <label htmlFor="chkBloqueo">Bloquear por imprevisto</label>
-              </div>
+            <Form>
+                <div className="bloqueo-box mb-3">
+                    <Form.Check 
+                        type="switch"
+                        id="chkBloqueo"
+                        label="Bloquear por imprevisto"
+                        checked={esBloqueo}
+                        onChange={(e) => setEsBloqueo(e.target.checked)}
+                        style={{color: '#ff6b6b', fontWeight: 'bold'}}
+                    />
+                </div>
 
-              {esBloqueo ? (
-                  <div className="form-group fade-in">
-                      <label style={{color:'#ccc'}}>Motivo:</label>
-                      <input type="text" className="form-control" placeholder="Ej: Urgencia..." value={motivoBloqueo} onChange={(e) => setMotivoBloqueo(e.target.value)} autoFocus />
-                  </div>
-              ) : (
-                  <>
-                    <div className="form-group">
-                        <label style={{color:'#ccc'}}>Cliente:</label>
-                        <select className="form-control" value={duenoSeleccionado} onChange={(e) => { setDuenoSeleccionado(e.target.value); setMascotaSeleccionada(""); }}>
-                            <option value="">-- Seleccionar --</option>
-                            {listaDuenos.map(d => (<option key={d._id} value={d._id}>{d.nombres} {d.apellidos}</option>))}
-                        </select>
-                    </div>
-                    <div className="form-group">
-                        <label style={{color:'#ccc'}}>Mascota:</label>
-                        <select className="form-control" value={mascotaSeleccionada} onChange={(e) => setMascotaSeleccionada(e.target.value)} disabled={!duenoSeleccionado}>
-                            <option value="">-- Seleccionar --</option>
-                            {mascotasFiltradas.map(m => (<option key={m._id} value={m._id}>{m.nombre}</option>))}
-                        </select>
-                    </div>
-                  </>
-              )}
-
-              <div className="modal-actions">
-                <button type="button" onClick={() => setModalAbierto(false)} style={{padding:'8px 15px', border:'1px solid #555', background:'transparent', color:'#ccc', borderRadius:'5px', cursor:'pointer'}}>Cancelar</button>
-                <button type="submit" style={{padding:'8px 15px', border:'none', background: esBloqueo ? '#dc3545' : '#00d4ff', color: esBloqueo ? 'white' : 'black', borderRadius:'5px', cursor:'pointer', fontWeight:'bold'}}>
-                    {esBloqueo ? "Bloquear" : "Confirmar"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+                {esBloqueo ? (
+                    <Form.Group className="mb-3">
+                        <Form.Label style={{color:'#ccc'}}>Motivo</Form.Label>
+                        <Form.Control 
+                            type="text" 
+                            placeholder="Ej: Urgencia personal..." 
+                            value={motivoBloqueo} 
+                            onChange={(e) => setMotivoBloqueo(e.target.value)} 
+                            autoFocus 
+                        />
+                    </Form.Group>
+                ) : (
+                    <>
+                        <Form.Group className="mb-3">
+                            <Form.Label style={{color:'#ccc'}}>Cliente</Form.Label>
+                            <Form.Select value={duenoSeleccionado} onChange={(e) => { setDuenoSeleccionado(e.target.value); setMascotaSeleccionada(""); }}>
+                                <option value="">-- Seleccionar --</option>
+                                {listaDuenos.sort((a,b)=>a.apellidos.localeCompare(b.apellidos)).map(d => (<option key={d._id} value={d._id}>{d.apellidos}, {d.nombres}</option>))}
+                            </Form.Select>
+                        </Form.Group>
+                        <Form.Group className="mb-3">
+                            <Form.Label style={{color:'#ccc'}}>Mascota</Form.Label>
+                            <Form.Select value={mascotaSeleccionada} onChange={(e) => setMascotaSeleccionada(e.target.value)} disabled={!duenoSeleccionado}>
+                                <option value="">-- Seleccionar --</option>
+                                {mascotasFiltradas.map(m => (<option key={m._id} value={m._id}>{m.nombre}</option>))}
+                            </Form.Select>
+                        </Form.Group>
+                    </>
+                )}
+            </Form>
+        </Modal.Body>
+        <Modal.Footer>
+            <Button variant="secondary" onClick={() => setShowModal(false)}>Cancelar</Button>
+            <Button 
+                className={esBloqueo ? 'btn-danger' : 'btn-neon'} 
+                onClick={handleGuardar}
+                style={!esBloqueo ? {backgroundColor: '#00d4ff', border: 'none', color: 'black', fontWeight: 'bold'} : {}}
+            >
+                {esBloqueo ? "Bloquear Horario" : "Confirmar Turno"}
+            </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 };

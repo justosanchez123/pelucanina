@@ -1,13 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const Usuario = require('../modelos/usuario');
-const Dueno = require('../modelos/dueno'); // Importante para crear perfil
+const Dueno = require('../modelos/dueno'); 
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const { OAuth2Client } = require('google-auth-library');
 
-// TU CLIENT ID DE GOOGLE
-const GOOGLE_CLIENT_ID = "1025771746986-gn7qttmc9pef2i5bf8tcamuf2phnvu14.apps.googleusercontent.com"; 
+// 🔒 Leemos la credencial desde el .env
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const client = new OAuth2Client(GOOGLE_CLIENT_ID);
 
 // 1. LOGIN NORMAL
@@ -41,7 +41,7 @@ router.post('/', async (req, res) => {
   }
 });
 
-// 2. LOGIN GOOGLE (NUEVO)
+// 2. LOGIN CON GOOGLE
 router.post('/google', async (req, res) => {
   const { token } = req.body;
   try {
@@ -55,10 +55,11 @@ router.post('/google', async (req, res) => {
     let usuario = await Usuario.findOne({ email });
 
     if (!usuario) {
-        // Registro automático si no existe
+        // Si no existe, lo registramos automáticamente
         const randomPassword = Math.random().toString(36).slice(-8);
         const hashedPassword = await bcrypt.hash(randomPassword, 10);
 
+        // 1️⃣ Crear Usuario
         usuario = new Usuario({
             nombres: given_name,
             apellidos: family_name || "",
@@ -66,14 +67,14 @@ router.post('/google', async (req, res) => {
             password: hashedPassword,
             rol: 'usuario', 
         });
-        await usuario.save();
+        const usuarioGuardado = await usuario.save(); 
 
-        // Crear perfil de Dueño automáticamente
+        // 2️⃣ Crear ficha de Dueño vinculada
         const nuevoDueno = new Dueno({
             nombres: given_name,
             apellidos: family_name || "",
             email,
-            usuarioId: usuario._id 
+            usuarioId: usuarioGuardado._id 
         });
         await nuevoDueno.save();
     }

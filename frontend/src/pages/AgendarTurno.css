@@ -1,0 +1,74 @@
+/* src/pages/AgendarTurno.css */
+
+.agendar-container {
+    max-width: 500px;
+    margin: 40px auto;
+    padding: 2.5rem;
+    border-radius: 15px;
+    background-color: #1e1e1e; /* Fondo Tarjeta Oscura */
+    border: 1px solid #333;
+    box-shadow: 0 0 30px rgba(0, 212, 255, 0.15); /* Resplandor azul */
+    color: white;
+}
+
+.agendar-title {
+    text-align: center;
+    color: white;
+    margin-bottom: 30px;
+    text-transform: uppercase;
+    font-weight: 900;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+}
+
+.agendar-label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 8px;
+    color: var(--neon-blue, #00d4ff);
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+}
+
+.agendar-input, .agendar-select {
+    width: 100%;
+    padding: 12px;
+    border-radius: 5px;
+    border: 1px solid #444;
+    background-color: #2c2c2c;
+    color: white;
+    margin-bottom: 20px;
+    font-size: 1rem;
+}
+
+.agendar-input:focus, .agendar-select:focus {
+    outline: none;
+    border-color: var(--neon-blue, #00d4ff);
+    box-shadow: 0 0 8px rgba(0, 212, 255, 0.3);
+}
+
+.btn-confirmar-rock {
+    width: 100%;
+    padding: 15px;
+    background-color: var(--neon-blue, #00d4ff);
+    color: black;
+    border: none;
+    border-radius: 50px;
+    font-weight: 900;
+    text-transform: uppercase;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.btn-confirmar-rock:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 20px var(--neon-blue, #00d4ff);
+    background-color: white;
+}
+
+.loading-text {
+    color: #aaa;
+    font-style: italic;
+    font-size: 0.9rem;
+}

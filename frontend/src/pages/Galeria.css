@@ -1,0 +1,123 @@
+
+/* --- CONTENEDOR PRINCIPAL --- */
+.galeria-container {
+  min-height: 100vh;
+  background-color: #121212; /* Fondo negro global */
+  padding: 40px 20px;
+  color: white;
+}
+
+/* --- TÍTULOS --- */
+.galeria-header {
+  text-align: center;
+  margin-bottom: 60px;
+}
+
+.galeria-title {
+  color: #00d4ff; /* Azul Neón */
+  font-weight: 900;
+  font-size: 3.5rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  text-shadow: 0 0 20px rgba(0, 212, 255, 0.4);
+  margin-bottom: 10px;
+}
+
+.galeria-subtitle {
+  font-size: 1.2rem;
+  color: #ccc;
+  font-weight: 300;
+  letter-spacing: 1px;
+}
+
+/* --- GRILLA DE FOTOS --- */
+.galeria-grid {
+  display: grid;
+  /* Responsivo automático: Columnas de mínimo 280px */
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-bottom: 50px;
+}
+
+/* --- TARJETA INDIVIDUAL --- */
+.foto-card {
+  background: #1e1e1e; /* Gris oscuro */
+  padding: 15px; /* Marco tipo polaroid oscuro */
+  border-radius: 12px;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  text-align: center;
+  border: 1px solid #333;
+  position: relative;
+}
+
+/* Efecto al pasar el mouse */
+.foto-card:hover {
+  transform: translateY(-10px) scale(1.02);
+  border-color: #ff00cc; /* Borde rosa neón */
+  box-shadow: 0 0 30px rgba(255, 0, 204, 0.2);
+  z-index: 10;
+}
+
+/* Marco de la imagen */
+.foto-frame {
+  width: 100%;
+  height: 280px; /* Altura fija para uniformidad */
+  overflow: hidden;
+  border-radius: 8px;
+  background-color: #000;
+  border: 1px solid #444;
+}
+
+.foto-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Recorta la imagen para llenar el cuadro sin deformar */
+  transition: transform 0.5s ease;
+  filter: grayscale(20%); /* Un toque vintage leve */
+}
+
+/* Zoom suave de la imagen interna al hover */
+.foto-card:hover .foto-img {
+  transform: scale(1.1);
+  filter: grayscale(0%);
+}
+
+/* Título de la foto (Nombre del perro) */
+.foto-titulo {
+  margin-top: 20px;
+  color: white;
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: 1.2rem;
+  letter-spacing: 1px;
+  text-shadow: 2px 2px 0px #000;
+}
+
+/* Estado Vacío */
+.empty-state {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: #666;
+  font-size: 1.5rem;
+  font-style: italic;
+  padding: 50px;
+  border: 2px dashed #333;
+  border-radius: 20px;
+}
+
+/* Animaciones de entrada */
+.fade-in-down { animation: fadeInDown 0.8s ease-out; }
+.fade-in-up { animation: fadeInUp 0.8s ease-out 0.2s backwards; }
+
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}

@@ -1,189 +1,8 @@
-/*App.css*/
-/* Contenedor principal */
-.contenedor {
-  max-width: 1200px;
-  margin: 2rem auto;
-  padding: 0 1rem;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
+/* src/App.css - VERSIÓN LIMPIA */
 
-/* Título */
-.titulo {
-  font-size: 2rem;
-  margin-bottom: 1rem;
-}
-
-/* Botón agregar mascota */
-.btn-agregar {
-  background-color: #65a8df;
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
-  cursor: pointer;
-  margin-bottom: 1rem;
-  transition: transform 0.2s;
-}
-
-.btn-agregar:hover {
-  transform: translateY(-3px);
-}
-
-/* Container de cards */
-.cards-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  justify-content: center;
-}
-
-/* Card individual */
-.card {
-  background: #ffffff;
-  border-radius: 10px;
-  padding: 1rem;
-  width: 250px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-  transition: transform 0.2s;
-  position: relative;
-}
-
-.card:hover {
-  transform: translateY(-5px);
-}
-
-/* Card con colorido */
-.card-colorido {
-  background: linear-gradient(135deg, #2f9bda, #b809af);
-  color: rgba(255, 255, 255, 0.349);
-}
-
-/* Título dentro de card */
-.card-title {
-  font-size: 1.2rem;
-  margin-bottom: 0.5rem;
-}
-
-/* Botones dentro de card */
-.card-buttons {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 1rem;
-}
-
-.btn-editar,
-.btn-eliminar {
-  color: white;
-  border: none;
-  padding: 0.3rem 0.7rem;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: transform 0.2s;
-}
-
-.btn-editar {
-  background-color: #4caf50;
-}
-
-.btn-editar:hover {
-  transform: translateY(-2px);
-}
-
-.btn-eliminar {
-  background-color: #f44336;
-}
-
-.btn-eliminar:hover {
-  transform: translateY(-2px);
-}
-
-/* Modal overlay */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0,0,0,0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
-
-/* Modal box */
-.modal {
-  background-color: #fff;
-  padding: 2rem;
-  border-radius: 10px;
-  width: 400px;
-  max-width: 90%;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-  position: relative;
-  z-index: 1001;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-/* Inputs del modal */
-.modal input {
-  padding: 0.5rem;
-  border-radius: 5px;
-  border: 1px solid #ccc;
-  width: 100%;
-}
-
-/* Botones del modal */
-.modal-buttons {
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.5rem;
-  margin-top: 1rem;
-}
-
-.btn-guardar {
-  background-color: #4caf50;
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-.btn-cancelar {
-  background-color: #f44336;
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-/* Animaciones */
-.animate-fade {
-  animation: fadeIn 0.3s ease-in-out;
-}
-
-.animate-slide {
-  animation: slideIn 0.3s ease-in-out;
-}
-
-@keyframes fadeIn {
-  from {opacity: 0;}
-  to {opacity: 1;}
-}
-
-@keyframes slideIn {
-  from {transform: translateY(-20px); opacity: 0;}
-  to {transform: translateY(0); opacity: 1;}
-}
-
-
-
-/* Estilo de Metal Limado Acerado */
+/* Solo dejamos los estilos metálicos que usa el Home */
 .card-metal {
-  background-color: #b0c4de; /* Color base acero azulado */
+  background-color: #b0c4de;
   background-image: 
     repeating-linear-gradient(
       90deg,
@@ -198,31 +17,42 @@
       rgba(255, 255, 255, 0) 40%,
       rgba(0, 0, 0, 0.2) 100%
     );
-  background-blend-mode: overlay; /* Mezcla las texturas para un efecto más realista */
-  border: 2px solid #8fa0b3; /* Borde metálico */
+  background-blend-mode: overlay;
+  border: 2px solid #8fa0b3;
   box-shadow: 
     inset 1px 1px 3px rgba(255, 255, 255, 0.7),
     inset -1px -1px 3px rgba(0, 0, 0, 0.3),
-    0 4px 8px rgba(0, 0, 0, 0.3); /* Sombras para profundidad */
-  color: #333; /* Color de texto oscuro para contraste */
+    0 10px 20px rgba(0, 0, 0, 0.5);
+  color: #333;
+  border-radius: 10px;
 }
 
-/* Ajustes para los elementos dentro de la tarjeta metálica */
 .card-metal h1,
 .card-metal h4 {
-  color: #222;
-  text-shadow: 1px 1px 1px rgba(255, 255, 255, 0.5); /* Sutil sombra para el texto */
+  color: #1a1a1a;
+  text-shadow: 1px 1px 1px rgba(255, 255, 255, 0.5);
+  font-weight: 800;
+  text-transform: uppercase;
 }
 
 .card-metal hr {
-  border-color: #8fa0b3; /* Color de la línea horizontal */
-  opacity: 0.6;
+  border-color: #5f7a94;
+  opacity: 0.5;
 }
 
 .card-metal .list-group-item {
-  /* Usa !important para asegurar que este fondo se aplique sobre el de .card */
-  background-color: rgba(255, 255, 255, 0.2) !important; /* Fondo más transparente */
+  background-color: rgba(255, 255, 255, 0.3) !important;
   border-color: #8fa0b3;
-  color: #333;
-  border-width: 1px; /* Asegura que el borde sea visible */
+  color: #222;
+  font-weight: 600;
+}
+
+/* Animaciones */
+.animate-fade {
+  animation: fadeIn 0.8s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }

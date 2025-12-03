@@ -1,27 +1,73 @@
+/* src/pages/TurnosAdmin.css */
+
+/* --- CONTENEDOR PRINCIPAL --- */
 .admin-turnos-container {
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem;
-  background-color: #121212; /* FONDO OSCURO PRINCIPAL */
+  /* Fondo transparente para ver el negro global */
+  background-color: transparent !important; 
   min-height: 100vh;
   color: #e0e0e0;
 }
 
+/* --- TÍTULO Y EMOJI (CORREGIDO) --- */
+.admin-title-page {
+  text-align: center;
+  color: #fff;
+  margin-bottom: 30px;
+  text-transform: uppercase;
+  font-weight: 900;
+  text-shadow: 0 0 10px rgba(255,255,255,0.2);
+  
+  /* Alineación perfecta del icono y texto */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+}
+
+.emoji-calendario {
+  font-size: 3rem;
+  /* CORRECCIÓN: Solo sombra azul, sin quemar la imagen a blanco */
+  filter: drop-shadow(0 0 15px rgba(0, 212, 255, 0.4)); 
+  line-height: 1;
+}
+
+/* --- FILTROS --- */
 .filtros-container {
   margin-bottom: 30px;
   text-align: center;
 }
 
+.filtros-container label {
+  font-weight: bold;
+  margin-right: 10px;
+  color: #00d4ff;
+}
+
+/* Input de fecha oscuro */
 .input-fecha-admin {
   padding: 8px 12px;
   font-size: 1.1rem;
   border: 1px solid #444;
-  background-color: #222;
+  background-color: #1e1e1e;
   color: white;
   border-radius: 5px;
+  /* Hace que el icono del calendario interno sea blanco */
+  color-scheme: dark; 
 }
 
-/* GRILLA */
+.vista-dia-title {
+  border-bottom: 1px solid #444;
+  padding-bottom: 10px;
+  color: #00d4ff;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* --- GRILLA DE TURNOS --- */
 .grilla-turnos {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -30,25 +76,26 @@
 }
 
 .turno-card {
-  border-radius: 8px;
+  border-radius: 12px;
   padding: 15px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   text-align: center;
-  min-height: 110px;
+  min-height: 120px;
   border: 1px solid #333;
   transition: transform 0.2s;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.2);
 }
 
 .hora-grande {
-  font-size: 1.6rem;
-  font-weight: bold;
+  font-size: 1.8rem;
+  font-weight: 800;
   margin-bottom: 5px;
 }
 
-/* --- ESTADOS OSCUROS --- */
+/* --- ESTADOS DE TURNOS --- */
 
 /* 1. LIBRE */
 .turno-libre {
@@ -61,88 +108,121 @@
   border-color: #00d4ff;
   color: #00d4ff;
   transform: translateY(-3px);
+  box-shadow: 0 0 15px rgba(0, 212, 255, 0.1);
 }
 
-/* 2. OCUPADO (Reserva) */
+/* 2. OCUPADO */
 .turno-ocupado {
-  background-color: #0d2e40; /* Azul oscuro muy sutil */
+  background-color: #0d2e40; /* Azul muy oscuro */
   border: 1px solid #005a80;
   color: white;
 }
 .turno-ocupado .hora-grande { color: #00d4ff; }
 
-/* 3. BLOQUEADO */
+/* 3. BLOQUEADO / SUSPENDIDO */
 .turno-suspendido {
-  background-color: #2c0b0e; /* Rojo oscuro muy sutil */
-  border: 1px solid #5a1a1a;
-  color: #aaa;
+  background-color: #3a1216; /* Rojo oscuro visible */
+  border: 1px solid #7a2a2a;
+  color: #ccc;
 }
 .turno-suspendido .hora-grande { color: #ff6b6b; }
 
-/* MODAL */
-.modal-overlay {
-  position: fixed;
-  top: 0; left: 0; width: 100%; height: 100%;
-  background: rgba(0,0,0,0.85);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 2000;
-  backdrop-filter: blur(5px);
+
+/* --- TABLA HISTORIAL --- */
+.historial-title {
+  margin-top: 40px;
+  border-bottom: 1px solid #444;
+  padding-bottom: 10px;
+  color: #00d4ff;
+  text-transform: uppercase;
+  font-weight: 800;
 }
 
-.modal-content {
-  background: #1e1e1e;
-  padding: 2rem;
-  border-radius: 10px;
-  width: 450px;
-  max-width: 90%;
-  box-shadow: 0 0 30px rgba(0,0,0,0.8);
+.table-rock-turnos {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin-top: 10px;
+  background-color: #1e1e1e;
+  border-radius: 8px;
+  overflow: hidden;
   border: 1px solid #333;
 }
 
-.form-group {
-  margin-bottom: 15px;
+.table-rock-turnos th {
+  background-color: #111;
+  color: #00d4ff;
+  padding: 15px;
+  text-transform: uppercase;
+  text-align: center;
+  border-bottom: 2px solid #00d4ff;
+}
+
+.table-rock-turnos td {
+  padding: 12px;
+  border-bottom: 1px solid #333;
+  text-align: center;
+  color: #ddd;
+  vertical-align: middle;
+}
+
+.table-rock-turnos tr:hover td {
+  background-color: #2a2a2a;
+}
+
+.separador-mes td {
+  background-color: #252525;
+  font-weight: bold;
+  color: #fff;
   text-align: left;
+  padding-left: 20px;
+  border-bottom: 1px solid #444;
 }
 
-.form-control {
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #444;
-  background-color: #2c2c2c;
+.btn-liberar {
+  background: transparent;
+  border: 1px solid #ff4d4d;
+  color: #ff4d4d;
+  padding: 6px 15px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: 0.2s;
+  font-weight: 600;
+}
+.btn-liberar:hover {
+  background: #ff4d4d;
   color: white;
-  border-radius: 5px;
-  margin-top: 5px;
 }
 
-.form-control:focus {
-    outline: none;
-    border-color: #00d4ff;
+/* --- MODAL (Ajustes internos) --- */
+/* El contenedor principal del modal se controla desde index.css global, 
+   aquí ajustamos el contenido específico */
+
+.modal-overlay {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.85);
+  display: flex; justify-content: center; align-items: center;
+  z-index: 2000; backdrop-filter: blur(5px);
 }
 
-.modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 25px;
-}
-
-/* Checkbox */
 .bloqueo-box {
-    background-color: #2c2c2c;
-    padding: 12px;
-    border: 1px solid #444;
-    border-radius: 5px;
-    margin-bottom: 20px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    color: #ff6b6b;
+  background-color: #2c2c2c; 
+  padding: 12px; 
+  border: 1px solid #444;
+  border-radius: 5px; 
+  display: flex; 
+  align-items: center;
+  gap: 10px; 
 }
-.bloqueo-box input {
-    width: 20px; height: 20px; cursor: pointer; accent-color: #ff6b6b;
+
+.btn-cancelar-modal {
+  padding: 8px 15px; border: 1px solid #555; background: transparent; color: #ccc; border-radius: 5px; cursor: pointer;
 }
-.bloqueo-box label {
-    cursor: pointer; font-weight: bold;
+
+.btn-confirmar-modal {
+  padding: 8px 15px; border: none; background: #00d4ff; color: black; border-radius: 5px; cursor: pointer; font-weight: bold;
+}
+.btn-confirmar-modal.danger {
+  background: #ff4d4d; color: white;
 }

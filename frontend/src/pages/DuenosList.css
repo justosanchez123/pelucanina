@@ -1,22 +1,23 @@
-/* src/pages/AdminRock.css */
 
 /* --- CONTENEDOR PRINCIPAL --- */
 .admin-container {
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem;
-  background-color: #121212; /* Fondo oscuro global */
-  min-height: 100vh;
-  color: white;
+  background-color: transparent !important;
+  min-height: 80vh;
+  color: white; 
 }
 
-/* --- TÍTULOS --- */
 .admin-title {
   font-weight: 900;
   text-transform: uppercase;
   color: white;
-  text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
-  margin-bottom: 1.5rem;
+  text-shadow: 0 0 15px rgba(0, 212, 255, 0.4);
+  margin-bottom: 2rem;
+  text-align: left;
+  border-left: 5px solid var(--neon-blue, #00d4ff);
+  padding-left: 15px;
 }
 
 /* --- INPUTS DE BÚSQUEDA --- */
@@ -25,101 +26,128 @@
   border: 1px solid #444 !important;
   color: white !important;
   padding: 12px;
+  font-size: 1rem;
+}
+
+.rock-input-group .form-control::placeholder {
+  color: #aaaaaa !important;
+  opacity: 1;
 }
 
 .rock-input-group .form-control:focus {
-  box-shadow: 0 0 10px rgba(0, 212, 255, 0.3) !important;
-  border-color: #00d4ff !important;
+  box-shadow: 0 0 15px rgba(0, 212, 255, 0.2) !important;
+  border-color: var(--neon-blue, #00d4ff) !important;
+  background-color: #252525 !important;
 }
 
 /* --- BOTONES NEÓN --- */
 .btn-neon {
-  background-color: #00d4ff !important;
+  background-color: var(--neon-blue, #00d4ff) !important;
   color: #000 !important;
   font-weight: 800 !important;
   border: none !important;
   text-transform: uppercase;
-  padding: 10px 20px !important;
+  padding: 10px 25px !important;
   transition: all 0.3s;
+  border-radius: 5px;
 }
 
 .btn-neon:hover {
-  box-shadow: 0 0 15px #00d4ff;
-  color: white !important;
+  box-shadow: 0 0 20px var(--neon-blue, #00d4ff);
+  background-color: white !important;
+  transform: translateY(-2px);
 }
 
-/* Botones de acción pequeños */
 .btn-icon {
-  background: transparent !important;
+  background: #2c2c2c !important;
   border: 1px solid #555 !important;
   color: #ccc !important;
   margin: 0 3px;
   transition: 0.2s;
+  padding: 6px 10px !important;
 }
 
 .btn-icon:hover {
   border-color: white !important;
   color: white !important;
   transform: scale(1.1);
+  background: #444 !important;
 }
 
 .btn-icon.danger:hover {
   border-color: #ff4d4d !important;
+  background-color: #3a0d0d !important;
   color: #ff4d4d !important;
 }
 
-/* --- TABLA OSCURA (Bootstrap Override) --- */
+/* --- TABLA OSCURA (ARREGLO DE TEXTO) --- */
 .table-rock {
-  --bs-table-bg: #1e1e1e;
-  --bs-table-color: #e0e0e0;
-  border-color: #333;
+  --bs-table-bg: transparent !important;
+  --bs-table-color: white !important; /* Texto base blanco */
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 1px solid #333;
   border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.5);
 }
 
 .table-rock thead th {
-  background-color: #2c2c2c !important;
-  color: #00d4ff !important; /* Texto Cyan en cabecera */
+  background-color: #111 !important;
+  color: var(--neon-blue, #00d4ff) !important;
   text-transform: uppercase;
   font-weight: 800;
-  border-bottom: 2px solid #00d4ff;
-  padding: 15px;
+  border-bottom: 2px solid var(--neon-blue, #00d4ff);
+  padding: 18px;
 }
 
 .table-rock tbody td {
   padding: 15px;
   vertical-align: middle;
-  background-color: #1e1e1e !important; /* Asegurar fondo oscuro */
-  color: white !important;
+  background-color: #1e1e1e !important;
+  border-bottom: 1px solid #333;
+  color: #e0e0e0 !important; /* Texto gris muy claro */
+}
+
+/* ESTO ARREGLA EL TEXTO INVISIBLE "text-muted" */
+.table-rock tbody td .text-muted, 
+.table-rock tbody td .small {
+    color: #aaaaaa !important; /* Gris claro visible */
 }
 
 .table-rock tbody tr:hover td {
-  background-color: #2a2a2a !important; /* Hover sutil */
-  color: #00d4ff !important;
+  background-color: #2a2a2a !important;
+  color: white !important;
 }
 
-/* --- MODALES OSCUROS --- */
+/* Badges */
+.badge-user {
+    background-color: rgba(0, 212, 255, 0.2);
+    color: #00d4ff;
+    border: 1px solid #00d4ff;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+}
+
+.badge-dueno {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #aaa;
+    border: 1px solid #555;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+}
+
+/* Modales */
 .modal-content {
   background-color: #1e1e1e !important;
   border: 1px solid #444 !important;
   color: white !important;
 }
-
-.modal-header {
-  border-bottom: 1px solid #333 !important;
+.modal-header, .modal-footer {
+  border-color: #333 !important;
 }
-
-.modal-footer {
-  border-top: 1px solid #333 !important;
-}
-
-.modal-title {
-  color: #00d4ff;
-  font-weight: 800;
-  text-transform: uppercase;
-}
-
 .btn-close {
-  filter: invert(1); /* X blanca */
+  filter: invert(1) grayscale(100%) brightness(200%);
 }

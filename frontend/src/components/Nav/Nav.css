@@ -1,11 +1,14 @@
+/* src/components/Nav/Nav.css */
+
+/* --- CONTENEDOR PRINCIPAL --- */
 .nav-container {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: rgba(18, 18, 18, 0.95); /* Casi negro */
-  backdrop-filter: blur(10px); /* Efecto vidrio */
-  padding: 0.8rem 2rem;
-  border-bottom: 2px solid var(--neon-blue);
+  background: rgba(18, 18, 18, 0.95);
+  backdrop-filter: blur(10px);
+  padding: 0.8rem 3rem;
+  border-bottom: 2px solid #00d4ff; /* Azul Neón */
   box-shadow: 0 4px 20px rgba(0, 212, 255, 0.15);
   position: sticky;
   top: 0;
@@ -13,77 +16,145 @@
   height: 80px;
 }
 
+/* --- LOGO --- */
 .nav-logo {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   text-decoration: none;
+  cursor: pointer;
 }
 
 .nav-logo-img {
-  height: 60px;
-  filter: drop-shadow(0 0 5px rgba(255,255,255,0.2));
-  transition: transform 0.3s;
-}
-
-.nav-logo:hover .nav-logo-img {
-  transform: rotate(-10deg) scale(1.1);
+  height: 55px;
+  /* Sombra blanca suave por defecto */
+  filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.2));
+  transition: transform 0.3s ease;
 }
 
 .nav-logo-text {
-  font-size: 1.5rem;
+  font-size: 1.4rem;
   font-weight: 900;
   color: white;
-  letter-spacing: 1px;
-}
-
-/* BOTONES */
-.nav-btn {
-  padding: 8px 16px;
-  border-radius: 4px;
-  font-weight: 700;
+  letter-spacing: 2px;
   text-transform: uppercase;
-  font-size: 0.85rem;
-  cursor: pointer;
-  transition: all 0.3s;
-  text-decoration: none;
-  display: inline-block;
+  /* Sombra blanca suave por defecto */
+  text-shadow: 0 0 5px rgba(255, 255, 255, 0.2);
+  transition: color 0.3s ease, text-shadow 0.3s ease;
 }
 
-.login-btn {
-  background: transparent;
-  border: 2px solid var(--neon-blue);
-  color: var(--neon-blue);
-}
-.login-btn:hover {
-  background: var(--neon-blue);
-  color: #000;
-  box-shadow: 0 0 15px var(--neon-blue);
-}
-
-.panel-btn {
-  background: var(--neon-gold);
-  color: #000;
-  border: none;
-  margin-left: 10px;
-}
-.panel-btn:hover {
-  background: #fff;
-  box-shadow: 0 0 15px var(--neon-gold);
-}
-
-.logout-btn {
-  background: transparent;
-  border: 1px solid var(--neon-pink);
-  color: var(--neon-pink);
-  margin-left: 10px;
-}
-.logout-btn:hover {
-  background: var(--neon-pink);
+/* --- EFECTO HOVER (TEXTO FUCSIA CLARITO SUAVE) --- */
+.nav-logo:hover .nav-logo-text {
   color: #fff;
+  /* CAMBIO AQUÍ: Una sola sombra suave color fucsia pastel */
+  text-shadow: 0 0 15px #ff85e1; 
+  transform: scale(1.02);
+}
+
+.nav-logo:hover .nav-logo-img {
+  /* La imagen solo gira y crece, NO cambia de color */
+  transform: rotate(-10deg) scale(1.1);
+}
+
+/* --- SECCIÓN DERECHA --- */
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 15px;
 }
 
 .nav-saludo {
-  color: #bbb;
+  color: #ccc;
   font-size: 0.9rem;
+  margin-right: 10px;
+  font-weight: 500;
+}
+
+/* Enlace Galería */
+.nav-link-galeria {
+  background: transparent;
+  border: none;
+  color: #e0e0e0;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: all 0.3s;
+  margin-right: 10px;
+}
+
+.nav-link-galeria:hover {
+  color: #ff00cc;
+  text-shadow: 0 0 10px #ff00cc;
+}
+
+/* --- BOTONES --- */
+.nav-btn {
+  padding: 8px 24px;
+  border-radius: 50px;
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.3s;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  letter-spacing: 1px;
+}
+
+/* Botón MI CAMERINO */
+.panel-btn {
+  background-color: #ffd700;
+  color: #000 !important;
+  border: 2px solid #ffd700;
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.2);
+}
+
+.panel-btn:hover {
+  background-color: transparent;
+  color: #ffd700 !important;
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+  transform: translateY(-2px);
+}
+
+/* Botón SALIR */
+.logout-btn {
+  background-color: transparent;
+  border: 2px solid #ff00cc;
+  color: #ff00cc;
+}
+
+.logout-btn:hover {
+  background-color: #ff00cc;
+  color: white;
+  box-shadow: 0 0 15px rgba(255, 0, 204, 0.5);
+  transform: translateY(-2px);
+}
+
+/* Botón LOGIN */
+.login-btn {
+  background: transparent;
+  border: 2px solid #00d4ff;
+  color: #00d4ff;
+}
+
+.login-btn:hover {
+  background: #00d4ff;
+  color: #000;
+  box-shadow: 0 0 20px #00d4ff;
+}
+
+/* --- RESPONSIVE --- */
+@media (max-width: 992px) {
+  .nav-container { padding: 0.5rem 1.5rem; }
+  .nav-logo-text { font-size: 1.2rem; }
+}
+
+@media (max-width: 768px) {
+  .nav-saludo { display: none; }
+  .nav-btn { padding: 6px 12px; font-size: 0.7rem; }
+  .nav-right { gap: 8px; }
 }
