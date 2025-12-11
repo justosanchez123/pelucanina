@@ -1,139 +1,162 @@
-/* =========================================
-   1. CONFIGURACIÓN DEL ESCENARIO (LAYOUT)
-   ========================================= */
+/* src/pages/Home.css */
 
-/* Contenedor principal de la página */
+/* =========================================
+   1. CONTENEDOR GENERAL
+   ========================================= */
 .home-container {
-  background-color: var(--bg-dark); /* Usa el negro global */
-  overflow-x: hidden; /* Evita scroll horizontal si algo se sale */
+  background-color: var(--bg-dark); /* Fondo negro */
+  overflow-x: hidden; /* Evita scroll horizontal */
+  min-height: 100vh;
 }
 
-/* Caja central donde está el perro y el título */
+/* =========================================
+   2. ESCENARIO CENTRAL (HERO)
+   ========================================= */
+
+/* Caja del contenido central (sin bordes para limpieza) */
 .main-stage-box {
   position: relative;
-  z-index: 10; /* Se asegura de estar por encima de los elementos laterales */
+  z-index: 10; /* Siempre por encima */
 }
 
 /* =========================================
-   2. TIPOGRAFÍA Y EFECTOS NEÓN
+   2. TÍTULO PRINCIPAL (VERSIÓN SUAVE)
    ========================================= */
 
-/* Título Principal "DOG & ROLL" */
 .title-neon {
-  font-weight: 900;
-  color: var(--neon-blue); /* Color Cian */
-  /* Sombra difuminada para crear el efecto de luz de neón */
-  text-shadow: 0 0 15px rgba(0, 212, 255, 0.6);
-  font-size: 4.5rem; /* Tamaño gigante */
+  /* Bajamos de 900 (Black) a 700 (Bold) para que sea menos tosco */
+  font-weight: 700; 
+  color: var(--neon-blue); /* Cian */
+  
+  /* Sombra más difusa y menos intensa */
+  text-shadow: 0 0 20px rgba(0, 212, 255, 0.4); 
+  
+  font-size: 4.5rem;
   margin-bottom: 0;
+  transition: all 0.3s ease;
+  cursor: default;
 }
 
-/* Efecto de contorno (Stroke) para el "&" */
+/* Efecto Hover: Cambio de color suave */
+.title-neon:hover {
+  color: #fff; /* Se vuelve blanco */
+  /* El resplandor se mantiene suave, sin capas agresivas */
+  text-shadow: 0 0 25px var(--neon-blue);
+}
+
+/* El "&" hueco */
 .text-stroke {
-  color: transparent; /* Relleno invisible */
-  -webkit-text-stroke: 3px white; /* Borde blanco grueso */
+  color: transparent;
+  -webkit-text-stroke: 2px white; /* Borde un poco más fino (era 3px) */
+  transition: all 0.3s ease;
 }
 
-/* =========================================
-   3. IMAGEN PRINCIPAL (PROTAGONISTA)
-   ========================================= */
+.title-neon:hover .text-stroke {
+  -webkit-text-stroke: 2px var(--neon-blue);
+  text-shadow: 0 0 15px rgba(0, 212, 255, 0.5);
+}
 
+/* El "&" hueco */
+.text-stroke {
+  color: transparent;
+  -webkit-text-stroke: 3px white;
+  transition: all 0.3s ease;
+}
+
+.title-neon:hover .text-stroke {
+  -webkit-text-stroke: 3px var(--neon-blue);
+  text-shadow: 0 0 10px var(--neon-blue);
+}
+
+/* --- IMAGEN DEL PERRO (PROTAGONISTA) --- */
 .main-dog-img {
-  max-height: 500px; /* Altura máxima grande */
+  max-height: 500px; /* Altura máxima para que se vea GRANDE */
   width: auto;
-  /* Sombra en el suelo para dar profundidad 3D */
-  filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.6));
-  transition: transform 0.3s ease; /* Suaviza el movimiento */
+  filter: drop-shadow(0 10px 30px rgba(0,0,0,0.6)); /* Sombra 3D */
+  transition: transform 0.3s ease;
 }
 
-/* Efecto al pasar el mouse sobre el perro principal */
 .main-dog-img:hover {
-  transform: scale(1.02) rotate(1deg); /* Crece un poquito y se inclina */
+  transform: scale(1.02) rotate(1deg); /* Movimiento sutil */
 }
 
-/* =========================================
-   4. BOTÓN DE LLAMADA A LA ACCIÓN (CTA)
-   ========================================= */
-
+/* --- BOTÓN "RESERVAR TURNO" (CTA) --- */
 .btn-cta {
-  background: var(--neon-pink); /* Fondo Fucsia */
+  background: var(--neon-pink); /* Fucsia */
   color: white;
   font-size: 1.6rem;
   font-weight: 900;
   padding: 15px 50px;
   border: none;
-  border-radius: 50px; /* Bordes redondos tipo píldora */
+  border-radius: 50px; /* Redondo */
   cursor: pointer;
-  box-shadow: 0 0 25px var(--neon-pink); /* Resplandor rosa inicial */
+  box-shadow: 0 0 25px var(--neon-pink);
   transition: all 0.3s ease;
+  letter-spacing: 1px;
 }
 
 .btn-cta:hover {
-  background: #ff009d; /* Un poco más oscuro al hover */
-  /* Se mueve hacia arriba y aumenta el resplandor */
-  transform: translateY(-5px) scale(1.05);
-  box-shadow: 0 0 50px var(--neon-pink);
+  background: #d900ae;
+  transform: translateY(-5px) scale(1.05); /* Sube y crece */
+  box-shadow: 0 0 50px var(--neon-pink); /* Brillo intenso */
 }
 
 /* =========================================
-   5. IMÁGENES LATERALES (EL PÚBLICO)
+   3. IMÁGENES LATERALES (PÚBLICO)
    ========================================= */
 
-/* Columna contenedora */
 .side-column {
   height: auto;
   justify-content: center;
-  opacity: 0.7; /* Un poco transparentes por defecto */
+  opacity: 0.7; /* Un poco apagadas por defecto */
   transition: opacity 0.3s;
 }
 
 .side-column:hover {
-  opacity: 1; /* Se vuelven totalmente visibles al pasar el mouse */
+  opacity: 1; /* Se encienden al pasar el mouse por la columna */
 }
 
-/* El marco de la foto (tipo Polaroid oscura) */
+/* Marco de la foto (Tipo Polaroid Oscura) */
 .img-frame {
   border: 3px solid #333;
   padding: 5px;
   background: #1e1e1e;
   transition: transform 0.3s ease;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+  
+  /* Ajuste de tamaño */
   width: 100%;
-  max-width: 220px; /* Ancho máximo controlado */
+  max-width: 240px; 
 }
 
-/* Inclinación aleatoria para efecto desordenado */
-.tilt-left {
-  transform: rotate(-5deg);
-}
+/* Inclinación estilo collage */
+.tilt-left { transform: rotate(-4deg); }
+.tilt-right { transform: rotate(4deg); }
 
-.tilt-right {
-  transform: rotate(5deg);
-}
-
-/* Efecto al pasar el mouse sobre una foto lateral */
+/* Hover en la foto individual */
 .img-frame:hover {
-  transform: rotate(0deg) scale(1.1); /* Se endereza y crece */
-  border-color: var(--neon-blue); /* El borde se pone azul neón */
-  z-index: 5; /* Se pone por encima de las otras */
+  transform: rotate(0deg) scale(1.1); /* Se endereza */
+  border-color: var(--neon-blue); /* Borde azul */
+  z-index: 5;
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.4);
 }
 
-/* La imagen de la foto lateral */
+/* La imagen en sí */
 .side-img {
   width: 100%;
-  height: 220px; /* Altura fija para uniformidad */
-  object-fit: cover; /* Recorta la imagen para llenar el cuadro */
-  filter: grayscale(100%); /* Efecto Blanco y Negro */
+  height: 200px; /* Altura fija para uniformidad */
+  object-fit: cover;
+  filter: grayscale(100%); /* Blanco y negro por defecto */
   transition: filter 0.3s ease;
 }
 
-/* Al hacer hover en el marco, la foto recupera el color */
+/* Recupera el color al pasar el mouse */
 .img-frame:hover .side-img {
   filter: grayscale(0%);
 }
 
 /* =========================================
-   6. TARJETAS DE SERVICIOS (SETLIST)
+   4. TARJETAS DE SERVICIOS (SETLIST)
    ========================================= */
 
 .service-card {
@@ -144,20 +167,21 @@
   transition: all 0.3s ease;
   text-align: center;
   height: 100%;
+  position: relative;
+  overflow: hidden;
 }
 
-/* Efecto al pasar el mouse sobre el servicio */
 .service-card:hover {
-  background: #1e1e1e; /* Fondo se vuelve sólido */
-  border-color: var(--neon-blue); /* Borde azul */
-  transform: translateY(-8px); /* Flota hacia arriba */
-  box-shadow: 0 0 20px rgba(0, 212, 255, 0.1); /* Resplandor suave */
+  background: #1e1e1e; /* Fondo sólido */
+  border-color: var(--neon-blue);
+  transform: translateY(-8px);
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.15);
 }
 
 .service-card .icon {
   font-size: 3.5rem;
   margin-bottom: 1.5rem;
-  filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.2));
+  filter: drop-shadow(0 0 5px rgba(255,255,255,0.2));
 }
 
 .service-card h4 {
@@ -165,9 +189,26 @@
   font-weight: 800;
   margin-bottom: 10px;
   letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+/* Línea decorativa bajo el título del servicio */
+.service-card h4::after {
+    content: '';
+    display: block;
+    width: 40px;
+    height: 3px;
+    background-color: var(--neon-pink);
+    margin: 10px auto 0;
+    transition: width 0.3s;
+}
+
+.service-card:hover h4::after {
+    width: 80px; /* La línea crece */
+    background-color: var(--neon-blue);
 }
 
 .service-card p {
-  color: var(--text-muted); /* Gris suave para no cansar la vista */
+  color: var(--text-muted);
   font-size: 0.95rem;
 }

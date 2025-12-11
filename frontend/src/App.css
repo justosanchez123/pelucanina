@@ -56,3 +56,38 @@
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* --- ARREGLO DE FORMULARIO DE REGISTRO (App.css) --- */
+
+/* 1. Etiquetas (NOMBRES, DNI, ETC) visibles y con estilo */
+.login-card label, 
+.login-card .form-label {
+  color: #e0e0e0 !important; /* Blanco suave (anula el gris oscuro) */
+  font-weight: 700 !important;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.8); /* Sombra negra para separar del fondo */
+}
+
+/* 2. Campos de Texto (Inputs) oscuros y modernos */
+.login-card .form-control {
+  background-color: #2b2b2b !important; /* Fondo gris oscuro */
+  border: 1px solid #555 !important;     /* Borde sutil */
+  color: #ffffff !important;             /* Texto BLANCO al escribir */
+  border-radius: 5px;
+}
+
+/* 3. Efecto al hacer clic en el campo (Focus) */
+.login-card .form-control:focus {
+  background-color: #333 !important;
+  border-color: #00d4ff !important;      /* Borde Azul Neón */
+  box-shadow: 0 0 15px rgba(0, 212, 255, 0.3) !important; /* Resplandor */
+  color: white !important;
+}
+
+/* 4. Color del texto de ayuda (placeholder) */
+.login-card .form-control::placeholder {
+  color: #888 !important;
+  opacity: 1;
+}
+

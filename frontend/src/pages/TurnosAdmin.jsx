@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import api from "../api/axios";
 import { useAuth } from "../context/AuthContext";
-import { Modal, Button, Form } from "react-bootstrap"; // Usamos Bootstrap Modal
-import Swal from "sweetalert2"; // Usamos SweetAlert
+import { Modal, Button, Form } from "react-bootstrap"; 
+import Swal from "sweetalert2"; 
 import "./TurnosAdmin.css";
 
 const TurnosAdmin = () => {
@@ -54,7 +54,67 @@ const TurnosAdmin = () => {
     setMascotaSeleccionada("");
     setEsBloqueo(false);
     setMotivoBloqueo("");
-    setShowModal(true); // Cambio a showModal
+    setShowModal(true); 
+  };
+
+  // --- NUEVA FUNCIÓN: BLOQUEO MASIVO ---
+  const handleBloquearDia = async () => {
+    // 1. Pedir motivo
+    const { value: motivo } = await Swal.fire({
+      title: 'Bloquear Día Completo',
+      text: `Se suspenderán todos los horarios libres del ${new Date(fechaSeleccionada + 'T00:00:00').toLocaleDateString()}.`,
+      input: 'text',
+      inputLabel: 'Motivo (Ej: Vacaciones, Reformas)',
+      inputPlaceholder: 'Escribe la razón...',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      confirmButtonText: '🔒 Bloquear Todo',
+      cancelButtonText: 'Cancelar',
+      background: '#1e1e1e', color: '#fff',
+      inputValidator: (value) => {
+        if (!value) return '¡Debes escribir un motivo!';
+      }
+    });
+
+    if (!motivo) return; 
+
+    // 2. Generar bloqueos para los huecos libres
+    const promesas = [];
+    
+    HORARIOS_LABORALES.forEach(hora => {
+        // Chequeamos si ya hay algo en ese horario (para no pisar turnos reales)
+        const ocupado = todosLosTurnos.find(t => {
+            const fechaTurno = t.fecha.split("T")[0];
+            return fechaTurno === fechaSeleccionada && t.hora === hora;
+        });
+
+        if (!ocupado) {
+            promesas.push(
+                api.post("/turnos", {
+                    fecha: fechaSeleccionada + "T12:00:00",
+                    hora: hora,
+                    bloqueado: true,
+                    nombreCliente: motivo, // Usamos el motivo como "nombre"
+                    mascota: null,
+                    dueno: usuario._id
+                })
+            );
+        }
+    });
+
+    if (promesas.length === 0) {
+        return Swal.fire({title: 'Sin cambios', text: 'El día ya estaba completo o bloqueado.', icon: 'info', background: '#1e1e1e', color: '#fff'});
+    }
+
+    // 3. Enviar todo junto
+    try {
+        Swal.fire({title: 'Procesando...', allowOutsideClick: false, didOpen: () => Swal.showLoading(), background: '#1e1e1e', color: '#fff'});
+        await Promise.all(promesas);
+        await cargarDatos();
+        Swal.fire({title: '¡Día Bloqueado!', icon: 'success', background: '#1e1e1e', color: '#fff'});
+    } catch (error) {
+        Swal.fire({title: 'Error', text: 'Hubo un problema al bloquear.', icon: 'error', background: '#1e1e1e', color: '#fff'});
+    }
   };
 
   const handleGuardar = async () => {
@@ -93,13 +153,14 @@ const TurnosAdmin = () => {
 
   const handleCancelarTurno = async (id) => {
     const result = await Swal.fire({
-        title: '¿Liberar horario?',
-        text: "Se eliminará la reserva.",
+        title: '¿Suspender turno?', 
+        text: "Se eliminará la reserva actual.",
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#d33',
         cancelButtonColor: '#3085d6',
-        confirmButtonText: 'Sí, liberar',
+        confirmButtonText: 'Sí, suspender', 
+        cancelButtonText: 'Cancelar',       
         background: '#1e1e1e', color: '#fff'
     });
 
@@ -107,9 +168,9 @@ const TurnosAdmin = () => {
         try {
             await api.delete(`/turnos/${id}`);
             cargarDatos();
-            Swal.fire({title:'Liberado', icon:'success', background:'#1e1e1e', color:'#fff'});
+            Swal.fire({title:'Suspendido', icon:'success', background:'#1e1e1e', color:'#fff'});
         } catch (error) {
-            Swal.fire({title:'Error', text:'No se pudo cancelar', icon:'error', background:'#1e1e1e', color:'#fff'});
+            Swal.fire({title:'Error', text:'No se pudo suspender', icon:'error', background:'#1e1e1e', color:'#fff'});
         }
     }
   };
@@ -136,19 +197,30 @@ const TurnosAdmin = () => {
 
   return (
     <div className="admin-turnos-container">
-      {/* Título con Emoji Arreglado */}
       <h2 className="admin-title-page">
          <span className="emoji-calendario">📅</span> PANEL DE TURNOS
       </h2>
 
-      <div className="filtros-container">
-        <label>Día a visualizar:</label>
-        <input
-          type="date"
-          className="input-fecha-admin"
-          value={fechaSeleccionada}
-          onChange={(e) => setFechaSeleccionada(e.target.value)}
-        />
+      <div className="filtros-container d-flex justify-content-center align-items-center gap-3 flex-wrap">
+        <div className="d-flex align-items-center">
+            <label>Día a visualizar:</label>
+            <input
+            type="date"
+            className="input-fecha-admin"
+            value={fechaSeleccionada}
+            onChange={(e) => setFechaSeleccionada(e.target.value)}
+            />
+        </div>
+        
+        {/* BOTÓN NUEVO DE BLOQUEO MASIVO */}
+        <Button 
+            variant="outline-danger" 
+            className="fw-bold"
+            onClick={handleBloquearDia}
+            style={{borderWidth: '2px'}}
+        >
+            🔒 Bloquear Día Completo
+        </Button>
       </div>
 
       <h3 className="vista-dia-title">
@@ -229,7 +301,7 @@ const TurnosAdmin = () => {
                     </td>
                     <td>
                       <button onClick={() => handleCancelarTurno(t._id)} className="btn-liberar">
-                        Liberar
+                        Suspender
                       </button>
                     </td>
                   </tr>
@@ -240,7 +312,6 @@ const TurnosAdmin = () => {
         </table>
       </div>
 
-      {/* MODAL CON BOOTSTRAP (Mucho más limpio) */}
       <Modal show={showModal} onHide={() => setShowModal(false)} centered backdrop="static">
         <Modal.Header closeButton>
             <Modal.Title className="text-white">Gestionar Horario: {turnoEnProceso.hora}:00 hs</Modal.Title>

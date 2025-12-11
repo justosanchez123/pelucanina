@@ -5,15 +5,17 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: rgba(18, 18, 18, 0.95);
+  background: rgba(12, 12, 12, 0.92);
   backdrop-filter: blur(10px);
-  padding: 0.8rem 3rem;
-  border-bottom: 2px solid #00d4ff; /* Azul Neón */
-  box-shadow: 0 4px 20px rgba(0, 212, 255, 0.15);
+  padding: 0 3rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   position: sticky;
   top: 0;
   z-index: 1000;
   height: 80px;
+
+  /* leve glow elegante */
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.03);
 }
 
 /* --- LOGO --- */
@@ -26,135 +28,181 @@
 }
 
 .nav-logo-img {
-  height: 55px;
-  /* Sombra blanca suave por defecto */
-  filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.2));
-  transition: transform 0.3s ease;
+  height: 54px;
+  filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.15));
+  transition: transform 0.35s ease, filter 0.35s ease;
 }
 
 .nav-logo-text {
-  font-size: 1.4rem;
+  font-size: 1.55rem;
   font-weight: 900;
-  color: white;
-  letter-spacing: 2px;
+  color: #fff;
+  letter-spacing: 1.5px;
   text-transform: uppercase;
-  /* Sombra blanca suave por defecto */
-  text-shadow: 0 0 5px rgba(255, 255, 255, 0.2);
-  transition: color 0.3s ease, text-shadow 0.3s ease;
+  font-family: 'Segoe UI', sans-serif;
+  transition: all 0.3s ease;
 }
 
-/* --- EFECTO HOVER (TEXTO FUCSIA CLARITO SUAVE) --- */
+/* Hover Logo */
 .nav-logo:hover .nav-logo-text {
   color: #fff;
-  /* CAMBIO AQUÍ: Una sola sombra suave color fucsia pastel */
-  text-shadow: 0 0 15px #ff85e1; 
-  transform: scale(1.02);
+  text-shadow: 0 0 18px #ff85e1;
+  transform: scale(1.03);
 }
 
 .nav-logo:hover .nav-logo-img {
-  /* La imagen solo gira y crece, NO cambia de color */
-  transform: rotate(-10deg) scale(1.1);
+  transform: rotate(-5deg) scale(1.1);
+  filter: drop-shadow(0 0 10px rgba(255,255,255,0.45));
 }
 
-/* --- SECCIÓN DERECHA --- */
+/* --- DERECHA --- */
 .nav-right {
   display: flex;
   align-items: center;
-  gap: 15px;
+  gap: 22px;
 }
 
+/* Saludo */
 .nav-saludo {
-  color: #ccc;
-  font-size: 0.9rem;
-  margin-right: 10px;
-  font-weight: 500;
+  color: #bbb;
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  text-shadow: 0 0 6px rgba(255,255,255,0.12);
 }
 
-/* Enlace Galería */
+.nav-saludo span {
+  color: #ffd700;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.4);
+}
+
+/* --- ENLACE GALERÍA --- */
 .nav-link-galeria {
   background: transparent;
   border: none;
-  color: #e0e0e0;
+  color: #ddd;
   font-weight: 700;
-  font-size: 0.85rem;
+  font-size: 0.92rem;
   cursor: pointer;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 2px;
   transition: all 0.3s;
-  margin-right: 10px;
+  padding: 5px 0;
+  position: relative;
+}
+
+.nav-link-galeria::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 2px;
+  bottom: 0;
+  left: 0;
+  background-color: #00d4ff;
+  transition: width 0.3s;
 }
 
 .nav-link-galeria:hover {
-  color: #ff00cc;
-  text-shadow: 0 0 10px #ff00cc;
+  color: #00d4ff;
+  text-shadow: 0 0 10px #00d4ff;
+  transform: translateY(-1px);
 }
 
-/* --- BOTONES --- */
+.nav-link-galeria:hover::after {
+  width: 100%;
+}
+
+/* --- BOTONES GENERALES --- */
 .nav-btn {
-  padding: 8px 24px;
-  border-radius: 50px;
+  padding: 8px 20px;
+  border-radius: 8px;
   font-weight: 800;
   text-transform: uppercase;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
+  letter-spacing: 1px;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.3s ease;
   text-decoration: none;
   display: flex;
   align-items: center;
   justify-content: center;
-  letter-spacing: 1px;
+
+  border: 2px solid transparent;
 }
 
-/* Botón MI CAMERINO */
-.panel-btn {
-  background-color: #ffd700;
-  color: #000 !important;
-  border: 2px solid #ffd700;
-  box-shadow: 0 0 10px rgba(255, 215, 0, 0.2);
-}
-
-.panel-btn:hover {
-  background-color: transparent;
-  color: #ffd700 !important;
-  box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
-  transform: translateY(-2px);
-}
-
-/* Botón SALIR */
-.logout-btn {
-  background-color: transparent;
-  border: 2px solid #ff00cc;
-  color: #ff00cc;
-}
-
-.logout-btn:hover {
-  background-color: #ff00cc;
-  color: white;
-  box-shadow: 0 0 15px rgba(255, 0, 204, 0.5);
-  transform: translateY(-2px);
-}
-
-/* Botón LOGIN */
+/* INICIAR SESIÓN (Cyan) */
 .login-btn {
   background: transparent;
-  border: 2px solid #00d4ff;
+  border-color: #00d4ff;
   color: #00d4ff;
 }
 
 .login-btn:hover {
   background: #00d4ff;
   color: #000;
-  box-shadow: 0 0 20px #00d4ff;
+  box-shadow: 0 0 15px rgba(0, 212, 255, 0.45);
+}
+
+/* MI CAMERINO (Fucsia rockero) */
+.panel-btn {
+  background: transparent;
+  border-color: #ff85e1;
+  color: #ff85e1 !important;
+}
+
+.panel-btn:hover {
+  background: #ff85e1;
+  color: #000 !important;
+  box-shadow: 0 0 15px rgba(255, 133, 225, 0.45);
+  transform: translateY(-2px);
+}
+
+/* --- BOTÓN SALIR (Rojo) --- */
+.logout-btn {
+  background: #ff3b3b;
+  border-color: #ff3b3b;
+  color: #000;
+  font-weight: 900;
+  transition: all 0.25s ease;
+  box-shadow: 0 0 6px rgba(255, 59, 59, 0.35);
+}
+
+.logout-btn:hover {
+  background: transparent;
+  border-color: #ff3b3b;
+  color: #ff3b3b;
+  box-shadow: 0 0 12px rgba(255, 59, 59, 0.55);
+  transform: translateY(-2px);
 }
 
 /* --- RESPONSIVE --- */
 @media (max-width: 992px) {
-  .nav-container { padding: 0.5rem 1.5rem; }
-  .nav-logo-text { font-size: 1.2rem; }
+  .nav-container { padding: 0 1.6rem; }
+  .nav-logo-text { font-size: 1.3rem; }
 }
 
 @media (max-width: 768px) {
   .nav-saludo { display: none; }
-  .nav-btn { padding: 6px 12px; font-size: 0.7rem; }
-  .nav-right { gap: 8px; }
+  .nav-btn { padding: 6px 12px; font-size: 0.75rem; }
+  .nav-right { gap: 12px; }
+  .nav-link-galeria { font-size: 0.75rem; letter-spacing: 0; }
 }
+/* Nav compacto al hacer scroll */
+.nav-shrink {
+  height: 65px;
+  padding: 0 2.2rem;
+  background: rgba(10, 10, 10, 0.85);
+  box-shadow: 0 0 18px rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(12px);
+  transition: all 0.35s ease;
+}
+
+.nav-shrink .nav-logo-img {
+  height: 45px;
+}
+
+.nav-shrink .nav-logo-text {
+  font-size: 1.3rem;
+}
+
