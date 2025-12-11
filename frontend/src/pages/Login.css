@@ -144,3 +144,33 @@
 .paw-icon:nth-child(10){ left: 95%; animation-duration: 19s; animation-delay: 7s; }
 .paw-icon:nth-child(11){ left: 10%; animation-duration: 20s; animation-delay: 5s; }
 .paw-icon:nth-child(12){ left: 60%; animation-duration: 22s; animation-delay: 2s; }
+
+/* --- ARREGLOS FORMULARIO OSCURO --- */
+
+/* Forzar etiquetas blancas y legibles */
+.text-white {
+    color: #ffffff !important;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.8); /* Sombra para resaltar sobre el fondo */
+    letter-spacing: 1px;
+}
+
+/* Estilo para los Inputs Oscuros */
+.input-dark {
+    background-color: #2b2b2b !important; /* Fondo Gris Oscuro */
+    border: 1px solid #555 !important;     /* Borde suave */
+    color: #ffffff !important;             /* Texto Blanco al escribir */
+}
+
+/* Efecto al hacer clic en el input */
+.input-dark:focus {
+    background-color: #333 !important;
+    border-color: #00d4ff !important;      /* Borde Cian */
+    box-shadow: 0 0 10px rgba(0, 212, 255, 0.3) !important;
+    color: #ffffff !important;
+}
+
+/* Placeholder (texto de ayuda) */
+.input-dark::placeholder {
+    color: #888 !important;
+    opacity: 1;
+}

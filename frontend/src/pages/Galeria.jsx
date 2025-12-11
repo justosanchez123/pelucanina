@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import api from "../api/axios";
-import "./Galeria.css"; // Importamos los estilos rockeros
+import "./Galeria.css"; 
 
 const Galeria = () => {
   const [fotos, setFotos] = useState([]);
@@ -22,16 +22,21 @@ const Galeria = () => {
 
   return (
     <div className="galeria-container">
+      {/* Efecto de luz de fondo */}
+      <div className="spotlight"></div>
+
       <div className="galeria-header fade-in-down">
-        <h2 className="galeria-title">✨ SALÓN DE LA FAMA ✨</h2>
+        {/* Título limpio sin estrellas, el estilo lo da el CSS */}
+        <h2 className="galeria-title">SALÓN DE LA FAMA</h2>
         <p className="galeria-subtitle">
-           Las estrellas de rock que pasaron por nuestras tijeras.
+           Nuestras leyendas del rock
         </p>
+        <div className="title-underline"></div>
       </div>
       
       <div className="galeria-grid fade-in-up">
         {cargando ? (
-           <p className="text-center text-white w-100">Cargando el show...</p>
+           <p className="text-center text-white w-100">Afinando instrumentos...</p>
         ) : fotos.length === 0 ? (
            <div className="empty-state">
              <p>El escenario está vacío por ahora. 🎸</p>
@@ -47,7 +52,9 @@ const Galeria = () => {
                     onError={(e) => { e.target.src = "https://via.placeholder.com/300?text=Sin+Imagen"; }}
                  />
                </div>
-               <h4 className="foto-titulo">{foto.titulo}</h4>
+               <div className="foto-info">
+                  <h4 className="foto-titulo">{foto.titulo}</h4>
+               </div>
              </div>
            ))
         )}

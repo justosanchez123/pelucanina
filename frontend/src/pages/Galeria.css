@@ -1,102 +1,159 @@
-
-/* --- CONTENEDOR PRINCIPAL --- */
+/* --- CONTENEDOR PRINCIPAL CON EFECTO DE ESCENARIO --- */
 .galeria-container {
   min-height: 100vh;
-  background-color: #121212; /* Fondo negro global */
+  background-color: #121212;
+  position: relative;
+  overflow-x: hidden;
   padding: 40px 20px;
   color: white;
+}
+
+/* Luz tipo reflector */
+.spotlight {
+  position: absolute;
+  top: -18%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 85%;
+  height: 600px;
+  background: radial-gradient(
+    circle,
+    rgba(0, 212, 255, 0.10) 0%,
+    rgba(18, 18, 18, 0) 70%
+  );
+  pointer-events: none;
+  z-index: 0;
 }
 
 /* --- TÍTULOS --- */
 .galeria-header {
   text-align: center;
   margin-bottom: 60px;
+  position: relative;
+  z-index: 1;
 }
 
+/* Cartel tipo concierto */
 .galeria-title {
-  color: #00d4ff; /* Azul Neón */
+  color: white;
   font-weight: 900;
-  font-size: 3.5rem;
+  font-size: 3.6rem;
   text-transform: uppercase;
-  letter-spacing: 2px;
-  text-shadow: 0 0 20px rgba(0, 212, 255, 0.4);
-  margin-bottom: 10px;
+  letter-spacing: 4px;
+
+  text-shadow:
+    0 0 10px rgba(0, 212, 255, 0.8),
+    0 0 25px rgba(0, 212, 255, 0.5),
+    0 0 40px rgba(0, 212, 255, 0.3);
 }
 
 .galeria-subtitle {
-  font-size: 1.2rem;
-  color: #ccc;
+  font-size: 1rem;
+  color: #aaa;
   font-weight: 300;
-  letter-spacing: 1px;
+  text-transform: uppercase;
+  letter-spacing: 6px;
 }
 
-/* --- GRILLA DE FOTOS --- */
+/* Línea neon rosa */
+.title-underline {
+  width: 110px;
+  height: 4px;
+  background: #ff00cc;
+  margin: 20px auto;
+  border-radius: 2px;
+  box-shadow: 0 0 12px #ff00cc;
+}
+
+/* --- GRILLA --- */
 .galeria-grid {
   display: grid;
-  /* Responsivo automático: Columnas de mínimo 280px */
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 40px;
   max-width: 1200px;
   margin: 0 auto;
   padding-bottom: 50px;
+  position: relative;
+  z-index: 1;
 }
 
-/* --- TARJETA INDIVIDUAL --- */
+/* --- TARJETA DE FOTO --- */
 .foto-card {
-  background: #1e1e1e; /* Gris oscuro */
-  padding: 15px; /* Marco tipo polaroid oscuro */
-  border-radius: 12px;
-  box-shadow: 0 10px 20px rgba(0,0,0,0.5);
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  text-align: center;
+  background: #1e1e1e;
+  padding: 12px;
+  border-radius: 6px;
   border: 1px solid #333;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+  transition: 
+    transform 0.4s ease,
+    border-color 0.3s ease,
+    box-shadow 0.4s ease;
   position: relative;
 }
 
-/* Efecto al pasar el mouse */
+/* Hover dinámico */
 .foto-card:hover {
   transform: translateY(-10px) scale(1.02);
-  border-color: #ff00cc; /* Borde rosa neón */
-  box-shadow: 0 0 30px rgba(255, 0, 204, 0.2);
+  border-color: #00d4ff;
+  box-shadow: 
+    0 20px 45px rgba(0, 212, 255, 0.20),
+    0 0 12px rgba(0, 212, 255, 0.30);
   z-index: 10;
 }
 
-/* Marco de la imagen */
+/* Marco de imagen */
 .foto-frame {
   width: 100%;
-  height: 280px; /* Altura fija para uniformidad */
+  height: 300px;
   overflow: hidden;
-  border-radius: 8px;
   background-color: #000;
+  border-radius: 4px;
+  position: relative;
   border: 1px solid #444;
+  transition: box-shadow 0.3s ease;
+}
+
+/* Glow sutil en hover */
+.foto-card:hover .foto-frame {
+  box-shadow: 0 0 12px rgba(0, 212, 255, 0.25);
 }
 
 .foto-img {
   width: 100%;
   height: 100%;
-  object-fit: cover; /* Recorta la imagen para llenar el cuadro sin deformar */
-  transition: transform 0.5s ease;
-  filter: grayscale(20%); /* Un toque vintage leve */
+  object-fit: cover;
+  transition: transform 0.5s ease, filter 0.5s ease;
+  filter: grayscale(40%) contrast(115%);
 }
 
-/* Zoom suave de la imagen interna al hover */
+/* La foto revive en color */
 .foto-card:hover .foto-img {
   transform: scale(1.1);
-  filter: grayscale(0%);
+  filter: grayscale(0%) contrast(100%);
 }
 
-/* Título de la foto (Nombre del perro) */
+/* --- INFO DEL PERRO --- */
+.foto-info {
+  padding-top: 15px;
+  text-align: center;
+}
+
 .foto-titulo {
-  margin-top: 20px;
   color: white;
   font-weight: 800;
   text-transform: uppercase;
-  font-size: 1.2rem;
+  font-size: 1.3rem;
   letter-spacing: 1px;
-  text-shadow: 2px 2px 0px #000;
+  margin: 0;
+  transition: color 0.3s ease, text-shadow 0.3s ease;
 }
 
-/* Estado Vacío */
+.foto-card:hover .foto-titulo {
+  color: #ff00cc;
+  text-shadow: 0 0 10px rgba(255, 0, 204, 0.5);
+}
+
+/* Estado vacío */
 .empty-state {
   grid-column: 1 / -1;
   text-align: center;
@@ -108,16 +165,23 @@
   border-radius: 20px;
 }
 
-/* Animaciones de entrada */
-.fade-in-down { animation: fadeInDown 0.8s ease-out; }
-.fade-in-up { animation: fadeInUp 0.8s ease-out 0.2s backwards; }
+/* Animaciones */
+.fade-in-down { animation: fadeInDown 1s ease-out; }
+.fade-in-up { animation: fadeInUp 1s ease-out 0.2s backwards; }
 
 @keyframes fadeInDown {
-  from { opacity: 0; transform: translateY(-20px); }
+  from { opacity: 0; transform: translateY(-30px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(20px); }
+  from { opacity: 0; transform: translateY(30px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .galeria-title { font-size: 2.7rem; }
+  .galeria-subtitle { letter-spacing: 3px; }
+  .spotlight { width: 100%; }
 }

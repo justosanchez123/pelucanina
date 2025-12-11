@@ -3,7 +3,7 @@ import { useAuth } from "../context/AuthContext";
 import { useNavigate, useLocation } from "react-router-dom";
 import api from "../api/axios";
 import Swal from 'sweetalert2';
-import "./AgendarTurno.css"; // Importamos el CSS nuevo
+import "./AgendarTurno.css"; 
 
 const AgendarTurno = () => {
   const { usuario } = useAuth();
@@ -17,7 +17,28 @@ const AgendarTurno = () => {
   const [horasDisponibles, setHorasDisponibles] = useState([]);
   const [cargandoHoras, setCargandoHoras] = useState(false);
 
-  const feriadosBackend = ['01-01-2025', '24-03-2025', '02-04-2025', '01-05-2025', '09-07-2025', '25-12-2025'];
+  // --- LISTA ACTUALIZADA CON 2025 y 2026 ---
+  const feriadosBackend = [
+    // 2025 (Finales)
+    '08-12-2025', '25-12-2025',
+    
+    // 2026 (Feriados Inamovibles y Principales Argentina)
+    '01-01-2026', // Año Nuevo
+    '16-02-2026', '17-02-2026', // Carnaval
+    '24-03-2026', // Memoria
+    '02-04-2026', // Malvinas
+    '01-05-2026', // Trabajador
+    '25-05-2026', // Revolución
+    '20-06-2026', // Belgrano
+    '09-07-2026', // Independencia
+    '17-08-2026', // San Martín
+    '12-10-2026', // Diversidad
+    '20-11-2026', // Soberanía
+    '08-12-2026', // Inmaculada Concepción
+    '25-12-2026'  // Navidad
+  ];
+
+  // Convertimos DD-MM-YYYY a YYYY-MM-DD para comparar con el input date
   const feriadosBloqueados = feriadosBackend.map(f => {
       const [dd, mm, yyyy] = f.split('-');
       return `${yyyy}-${mm}-${dd}`;
@@ -41,6 +62,7 @@ const AgendarTurno = () => {
       const fechaInput = e.target.value;
       if (!fechaInput) { setFecha(""); return; }
 
+      // Ajustamos la zona horaria para que no detecte mal el día
       const diaSeleccionado = new Date(fechaInput + "T00:00:00");
       const esDomingo = diaSeleccionado.getDay() === 0;
       const esFeriado = feriadosBloqueados.includes(fechaInput);
@@ -49,10 +71,12 @@ const AgendarTurno = () => {
           Swal.fire({title:'Domingo Cerrado', text:'Descansamos los domingos.', icon:'info', background:'#1e1e1e', color:'#fff'});
           setFecha(""); return;
       }
+      
       if (esFeriado) {
-          Swal.fire({title:'Feriado', text:'Día no laborable.', icon:'info', background:'#1e1e1e', color:'#fff'});
+          Swal.fire({title:'Feriado Nacional', text:'El local permanece cerrado en días festivos.', icon:'warning', background:'#1e1e1e', color:'#fff', confirmButtonColor:'#00d4ff'});
           setFecha(""); return;
       }
+
       setFecha(fechaInput);
       setHora("");
   };
@@ -86,6 +110,8 @@ const AgendarTurno = () => {
         navigate("/usuario");
     } catch (error) {
         Swal.fire({title: 'Error', text: error.response?.data?.mensaje || "Error al reservar", icon: 'error', background: '#1e1e1e', color: '#fff'});
+        
+        // Si el error es conflicto (409), recargamos los horarios
         if (error.response?.status === 409) {
              const [yyyy, mm, dd] = fecha.split("-");
              const res = await api.get(`/turnos/disponibles?fecha=${dd}-${mm}-${yyyy}`);
@@ -111,7 +137,14 @@ const AgendarTurno = () => {
 
           <div>
             <label className="agendar-label">Fecha:</label>
-            <input type="date" className="agendar-input" value={fecha} min={new Date().toISOString().split("T")[0]} onChange={handleFechaChange} required />
+            <input 
+                type="date" 
+                className="agendar-input" 
+                value={fecha} 
+                min={new Date().toISOString().split("T")[0]} 
+                onChange={handleFechaChange} 
+                required 
+            />
           </div>
 
           <div>
